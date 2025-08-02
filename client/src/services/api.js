@@ -85,6 +85,53 @@ export const usersAPI = {
     getDepartments: () => api.get('/users/departments'),
 };
 
+// Reservations API calls
+export const reservationsAPI = {
+    getAll: (params) => api.get('/reservations', { params }),
+    getUserReservations: (params) => api.get('/reservations/user', { params }),
+    checkAvailability: (componentId, params) => api.get(`/reservations/availability/${componentId}`, { params }),
+    create: (data) => api.post('/reservations', data),
+    update: (id, data) => api.put(`/reservations/${id}`, data),
+    delete: (id) => api.delete(`/reservations/${id}`),
+};
+
+// Maintenance API calls
+export const maintenanceAPI = {
+    getAll: (params) => api.get('/maintenance', { params }),
+    create: (data) => api.post('/maintenance', data),
+    update: (id, data) => api.put(`/maintenance/${id}`, data),
+    updateStatus: (id, data) => api.patch(`/maintenance/${id}/status`, data),
+    delete: (id) => api.delete(`/maintenance/${id}`),
+    getStats: () => api.get('/maintenance/stats'),
+};
+
+// Reports API calls
+export const reportsAPI = {
+    getInventoryReport: (params) => api.get('/reports/inventory', { params }),
+    getUsageReport: (params) => api.get('/reports/usage', { params }),
+    getMaintenanceReport: (params) => api.get('/reports/maintenance', { params }),
+    getReservationReport: (params) => api.get('/reports/reservations', { params }),
+    getDashboardAnalytics: () => api.get('/reports/dashboard'),
+};
+
+// Import/Export API calls
+export const importExportAPI = {
+    exportComponents: (format, params) => api.get(`/import-export/export/${format}`, {
+        params,
+        responseType: 'blob'
+    }),
+    importComponents: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/import-export/import', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    },
+    getTemplate: (format) => api.get(`/import-export/template/${format}`, {
+        responseType: 'blob'
+    }),
+};
+
 // Health check
 export const healthAPI = {
     check: () => api.get('/health'),

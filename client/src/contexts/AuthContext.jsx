@@ -211,6 +211,15 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: 'CLEAR_ERROR' });
     };
 
+    // Update user function (for external updates)
+    const updateUser = (updatedUser) => {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        dispatch({
+            type: 'UPDATE_PROFILE_SUCCESS',
+            payload: { user: updatedUser },
+        });
+    };
+
     const value = {
         ...state,
         login,
@@ -220,6 +229,7 @@ export const AuthProvider = ({ children }) => {
         changePassword,
         clearError,
         loadUser,
+        updateUser,
     };
 
     return (

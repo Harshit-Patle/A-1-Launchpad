@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
 
 // Get all users (Admin only)
 exports.getAllUsers = async (req, res) => {
@@ -180,6 +181,102 @@ exports.getDepartments = async (req, res) => {
     try {
         const departments = await User.distinct('department', { isActive: true });
         res.json(departments.filter(dept => dept)); // Remove null/undefined values
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// Update user profile
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, email, phone, department, preferences } = req.body;
+
+        // Check if email is already taken by another user
+        const existingUser = await User.findOne({
+            email,
+            _id: { $ne: req.user.id }
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ msg: 'Email already in use' });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            {
+                name,
+                email,
+                phone,
+                department,
+                preferences,
+                updatedAt: new Date()
+            },
+            { new: true }
+        ).select('-password');
+
+        res.json({ user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// Change password
+exports.changePassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findById(req.user.id);
+
+        // Verify current password
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Current password is incorrect' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await User.findByIdAndUpdate(req.user.id, {
+            password: hashedPassword,
+            updatedAt: new Date()
+        });
+
+        res.json({ msg: 'Password changed successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+// Update user role and permissions (Admin only)
+exports.updateUserRole = async (req, res) => {
+    try {
+        const { role, permissions } = req.body;
+        const userId = req.params.id;
+
+        // Don't allow changing own role
+        if (userId === req.user.id) {
+            return res.status(400).json({ msg: 'Cannot change your own role' });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                role,
+                permissions,
+                updatedAt: new Date()
+            },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        res.json({ user });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: 'Server error' });

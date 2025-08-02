@@ -12,6 +12,12 @@ import Dashboard from './pages/Dashboard';
 import Logs from './pages/Logs';
 import Users from './pages/Users';
 import ImportExport from './pages/ImportExport';
+import Reservations from './pages/Reservations';
+import MaintenanceTracking from './pages/MaintenanceTracking';
+import AdvancedReports from './pages/AdvancedReports';
+import ApprovalWorkflow from './pages/ApprovalWorkflow';
+import UserProfile from './pages/UserProfile';
+import RoleManagement from './pages/RoleManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -80,6 +86,36 @@ function App() {
                 }
               />
               <Route
+                path="/reservations"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Reservations />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/maintenance"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MaintenanceTracking />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AdvancedReports />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/import-export"
                 element={
                   <ProtectedRoute role="Admin">
@@ -95,6 +131,36 @@ function App() {
                   <ProtectedRoute role="Admin">
                     <Layout>
                       <Users />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/role-management"
+                element={
+                  <ProtectedRoute role="Admin">
+                    <Layout>
+                      <RoleManagement />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/approval-workflow"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ApprovalWorkflow />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user-profile"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <UserProfile />
                     </Layout>
                   </ProtectedRoute>
                 }

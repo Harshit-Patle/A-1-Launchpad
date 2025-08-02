@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const { runNotificationChecks } = require('./controllers/notificationController');
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,11 @@ app.use('/api/components', require('./routes/componentRoutes'));
 app.use('/api/logs', require('./routes/logRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/import-export', require('./routes/importExportRoutes'));
+app.use('/api/reservations', require('./routes/reservationRoutes'));
+app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/approvals', require('./routes/approvalRoutes'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -78,4 +84,10 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+
+    // Run notification checks every hour
+    setInterval(runNotificationChecks, 60 * 60 * 1000);
+
+    // Run initial notification check after server starts
+    setTimeout(runNotificationChecks, 10000);
 });

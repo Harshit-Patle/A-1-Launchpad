@@ -39,4 +39,19 @@ router.put('/:id/reset-password', authMiddleware, adminOnly, userController.rese
 // @access  Private/Admin
 router.delete('/:id', authMiddleware, adminOnly, userController.deleteUser);
 
+// @route   PUT /api/users/profile
+// @desc    Update user profile
+// @access  Private
+router.put('/profile', authMiddleware, userController.updateProfile);
+
+// @route   PUT /api/users/change-password
+// @desc    Change user password
+// @access  Private
+router.put('/change-password', authMiddleware, userController.changePassword);
+
+// @route   PUT /api/users/:id/role
+// @desc    Update user role and permissions
+// @access  Private/Admin
+router.put('/:id/role', authMiddleware, adminOnly, userController.updateUserRole);
+
 module.exports = router;
