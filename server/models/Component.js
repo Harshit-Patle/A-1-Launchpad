@@ -29,8 +29,14 @@ const componentSchema = new mongoose.Schema({
     lastRestocked: Date,
     addedDate: { type: Date, default: Date.now },
     lastUsedDate: Date,
+    lastMovementDate: { type: Date, default: Date.now }, // Tracks both inward and outward movement for old stock detection
     addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    updatedAt: { type: Date, default: Date.now }
+    updatedAt: { type: Date, default: Date.now },
+    notificationSettings: {
+        lowStockEnabled: { type: Boolean, default: true },
+        oldStockEnabled: { type: Boolean, default: true },
+        oldStockThreshold: { type: Number, default: 90 } // Days of no movement that triggers old stock alert (default 90 days = 3 months)
+    }
 });
 
 // Calculate total value before saving

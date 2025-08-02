@@ -116,11 +116,19 @@ exports.createNotification = async (userId, type, title, message, data = null, p
 // Check and send low stock alerts
 exports.checkLowStockAlerts = async () => {
     try {
-        // Get components that are low on stock
+        // Get components that are low on stock based on their criticalLow value
         const lowStockComponents = await Component.find({
-            $expr: { $lte: ['$quantity', '$minThreshold'] }
+            $expr: { $lte: ['$quantity', '$criticalLow'] },
+            quantity: { $gt: 0 } // Only alert if stock is low but not zero
         });
 
+        // Get components that are completely out of stock
+        const outOfStockComponents = await Component.find({
+            quantity: 0,
+            isActive: true
+        });
+
+        // Process low stock components
         for (const component of lowStockComponents) {
             // Check if we already sent a notification for this component in the last 24 hours
             const existingNotification = await Notification.findOne({
@@ -130,17 +138,61 @@ exports.checkLowStockAlerts = async () => {
             });
 
             if (!existingNotification) {
-                // Send notification to all admin users
-                const adminUsers = await require('../models/User').find({ role: 'Admin' });
+                // Calculate how close to criticalLow the component is
+                const percentageOfThreshold = (component.quantity / component.criticalLow) * 100;
+                const priority = percentageOfThreshold <= 50 ? 'high' : 'medium';
 
-                for (const admin of adminUsers) {
+                // Send notification to all admin users and inventory managers
+                const users = await require('../models/User').find({
+                    role: { $in: ['Admin', 'Manager'] }
+                });
+
+                for (const user of users) {
                     await exports.createNotification(
-                        admin._id,
+                        user._id,
                         'low_stock',
                         'Low Stock Alert',
-                        `${component.name} (${component.partNumber}) is running low. Current stock: ${component.quantity}, Minimum threshold: ${component.minThreshold}`,
-                        { componentId: component._id, currentStock: component.quantity },
-                        'high'
+                        `${component.name} (${component.partNumber}) is running low. Current stock: ${component.quantity}, Critical threshold: ${component.criticalLow}`,
+                        {
+                            componentId: component._id,
+                            currentStock: component.quantity,
+                            criticalLow: component.criticalLow,
+                            percentageOfThreshold: percentageOfThreshold.toFixed(1)
+                        },
+                        priority
+                    );
+                }
+            }
+        }
+
+        // Process out of stock components
+        for (const component of outOfStockComponents) {
+            // Check if we already sent a notification for this component in the last 24 hours
+            const existingNotification = await Notification.findOne({
+                type: 'low_stock',
+                'data.componentId': component._id,
+                'data.outOfStock': true,
+                createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+            });
+
+            if (!existingNotification) {
+                // Send notification to all admin users and inventory managers
+                const users = await require('../models/User').find({
+                    role: { $in: ['Admin', 'Manager'] }
+                });
+
+                for (const user of users) {
+                    await exports.createNotification(
+                        user._id,
+                        'low_stock',
+                        'Out of Stock Alert',
+                        `${component.name} (${component.partNumber}) is completely out of stock and needs to be reordered immediately.`,
+                        {
+                            componentId: component._id,
+                            currentStock: 0,
+                            outOfStock: true
+                        },
+                        'critical'
                     );
                 }
             }
@@ -233,9 +285,83 @@ exports.checkReservationReminders = async () => {
     }
 };
 
+// Check and send old stock alerts for items that haven't moved in 3+ months
+exports.checkOldStockAlerts = async () => {
+    try {
+        // Find components that haven't had any movement (inward or outward) based on their individual thresholds
+        const components = await Component.find({
+            quantity: { $gt: 0 },
+            "notificationSettings.oldStockEnabled": { $ne: false }, // Only check components with old stock alerts enabled
+            isActive: true
+        });
+
+        const oldStockComponents = [];
+
+        // Filter components based on their individual oldStockThreshold or default 90 days
+        for (const component of components) {
+            const threshold = component.notificationSettings?.oldStockThreshold || 90; // Default 90 days if not specified
+            const thresholdDate = new Date();
+            thresholdDate.setDate(thresholdDate.getDate() - threshold);
+
+            // Check if the last movement date is older than the threshold
+            if (component.lastMovementDate && component.lastMovementDate < thresholdDate) {
+                oldStockComponents.push(component);
+            }
+        }
+
+        for (const component of oldStockComponents) {
+            // Calculate how long the component has been unused
+            const daysSinceLastMovement = Math.floor((Date.now() - new Date(component.lastMovementDate)) / (1000 * 60 * 60 * 24));
+            const threshold = component.notificationSettings?.oldStockThreshold || 90;
+
+            // Check if we already sent a notification for this component in the last 7 days
+            const existingNotification = await Notification.findOne({
+                type: 'old_stock',
+                'data.componentId': component._id,
+                createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+            });
+
+            if (!existingNotification) {
+                // Calculate the priority based on how far past the threshold we are
+                let priority = 'medium';
+                if (daysSinceLastMovement > threshold * 2) {
+                    priority = 'high';
+                }
+
+                // Send notification to all admin users and inventory managers
+                const users = await require('../models/User').find({
+                    role: { $in: ['Admin', 'Manager'] }
+                });
+
+                for (const user of users) {
+                    await exports.createNotification(
+                        user._id,
+                        'old_stock',
+                        'Old Stock Alert',
+                        `${component.name} (${component.partNumber}) has not been used for ${daysSinceLastMovement} days. Current stock: ${component.quantity}`,
+                        {
+                            componentId: component._id,
+                            currentStock: component.quantity,
+                            daysSinceLastMovement,
+                            lastMovementDate: component.lastMovementDate,
+                            threshold: threshold,
+                            daysOverThreshold: daysSinceLastMovement - threshold,
+                            totalValue: component.unitPrice * component.quantity
+                        },
+                        priority
+                    );
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking old stock alerts:', error);
+    }
+};
+
 // Run all notification checks
 exports.runNotificationChecks = async () => {
     await exports.checkLowStockAlerts();
     await exports.checkMaintenanceDueAlerts();
     await exports.checkReservationReminders();
+    await exports.checkOldStockAlerts();
 };

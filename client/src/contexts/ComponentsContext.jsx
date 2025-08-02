@@ -208,6 +208,8 @@ export const ComponentsProvider = ({ children }) => {
             const response = await componentsAPI.updateQuantity(id, quantityData);
             dispatch({ type: 'UPDATE_COMPONENT', payload: response.data.component });
             toast.success(response.data.msg);
+            // Refresh components list to show updated quantities
+            fetchComponents();
             return { success: true, data: response.data };
         } catch (error) {
             const errorMsg = error.response?.data?.msg || 'Failed to update quantity';

@@ -18,6 +18,7 @@ import AdvancedReports from './pages/AdvancedReports';
 import ApprovalWorkflow from './pages/ApprovalWorkflow';
 import UserProfile from './pages/UserProfile';
 import RoleManagement from './pages/RoleManagement';
+import StockMovement from './pages/StockMovement';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -71,6 +72,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <AddComponent />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/stock-movement"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <StockMovement />
                     </Layout>
                   </ProtectedRoute>
                 }

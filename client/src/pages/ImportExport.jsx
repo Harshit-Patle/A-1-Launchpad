@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 import { useComponents } from '../contexts/ComponentsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 export default function ImportExport() {
     const { user } = useAuth();
@@ -11,6 +12,25 @@ export default function ImportExport() {
     const [importing, setImporting] = useState(false);
     const [exporting, setExporting] = useState(false);
     const [file, setFile] = useState(null);
+
+    // Enhanced functionality
+    const [activeTab, setActiveTab] = useState('components');
+    const [exportFormat, setExportFormat] = useState('xlsx');
+    const [exportOptions, setExportOptions] = useState({
+        includeMetadata: true,
+        includeQuantityHistory: false,
+        includeNotes: true,
+        dateRange: 'all',
+        customStartDate: '',
+        customEndDate: ''
+    });
+    const [loading, setLoading] = useState(false);
+    const [previewData, setPreviewData] = useState(null);
+    const [showPreview, setShowPreview] = useState(false);
+    const [scannerOpen, setScannerOpen] = useState(false);
+    const [importProgress, setImportProgress] = useState({ total: 0, processed: 0, success: 0, errors: 0 });
+    const [importErrors, setImportErrors] = useState([]);
+    const [importType, setImportType] = useState('create'); // 'create', 'update', or 'both'
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];

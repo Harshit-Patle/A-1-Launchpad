@@ -118,7 +118,8 @@ exports.create = async (req, res) => {
             specifications,
             tags,
             addedBy: req.user.id,
-            lastRestocked: new Date()
+            lastRestocked: new Date(),
+            lastMovementDate: new Date()
         });
 
         await component.save();
@@ -201,14 +202,17 @@ exports.updateQuantity = async (req, res) => {
         if (type === 'inward') {
             newQuantity += parseInt(quantity);
             component.lastRestocked = new Date();
+            component.lastMovementDate = new Date();
         } else if (type === 'outward') {
             if (component.quantity < quantity) {
                 return res.status(400).json({ msg: 'Insufficient stock' });
             }
             newQuantity -= parseInt(quantity);
             component.lastUsedDate = new Date();
+            component.lastMovementDate = new Date();
         } else if (type === 'adjustment') {
             newQuantity = parseInt(quantity);
+            component.lastMovementDate = new Date();
         }
 
         component.quantity = newQuantity;

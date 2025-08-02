@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const { runNotificationChecks } = require('./controllers/notificationController');
+const { initScheduledTasks } = require('./utils/scheduledTasks');
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +42,7 @@ app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/approvals', require('./routes/approvalRoutes'));
+app.use('/api/component-settings', require('./routes/componentSettings'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -85,9 +86,6 @@ app.listen(PORT, () => {
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
 
-    // Run notification checks every hour
-    setInterval(runNotificationChecks, 60 * 60 * 1000);
-
-    // Run initial notification check after server starts
-    setTimeout(runNotificationChecks, 10000);
+    // Initialize scheduled tasks (including notification checks)
+    initScheduledTasks();
 });

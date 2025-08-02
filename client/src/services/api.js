@@ -62,6 +62,7 @@ export const componentsAPI = {
     getCategories: () => api.get('/components/categories'),
     getLocations: () => api.get('/components/locations'),
     getLowStock: () => api.get('/components/low-stock'),
+    updateNotificationSettings: (id, data) => api.patch(`/component-settings/${id}/notifications`, data),
 };
 
 // Logs API calls
@@ -130,6 +131,14 @@ export const importExportAPI = {
     getTemplate: (format) => api.get(`/import-export/template/${format}`, {
         responseType: 'blob'
     }),
+};
+
+// Notifications API calls
+export const notificationsAPI = {
+    getAll: (params) => api.get('/notifications', { params }),
+    markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+    markAllAsRead: () => api.patch('/notifications/mark-all-read'),
+    delete: (id) => api.delete(`/notifications/${id}`),
 };
 
 // Health check
