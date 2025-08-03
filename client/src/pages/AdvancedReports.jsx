@@ -128,7 +128,7 @@ export default function AdvancedReports() {
         const valueData = {
             labels: reportData.categoryStats.map(stat => stat._id),
             datasets: [{
-                label: 'Total Value by Category ($)',
+                label: 'Total Value by Category (₹)',
                 data: reportData.categoryStats.map(stat => stat.totalValue),
                 backgroundColor: 'rgba(34, 197, 94, 0.8)',
                 borderColor: 'rgba(34, 197, 94, 1)',
@@ -148,7 +148,7 @@ export default function AdvancedReports() {
                         <div className="text-gray-600">Categories</div>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
-                        <div className="text-2xl font-bold text-gray-900">${(reportData.summary?.totalValue || 0).toLocaleString()}</div>
+                        <div className="text-2xl font-bold text-gray-900">₹{(reportData.summary?.totalValue || 0).toLocaleString()}</div>
                         <div className="text-gray-600">Total Value</div>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
@@ -263,7 +263,7 @@ export default function AdvancedReports() {
         const monthlySpending = {
             labels: reportData.costData.monthlySpending?.map(item => item.month) || [],
             datasets: [{
-                label: 'Monthly Spending ($)',
+                label: 'Monthly Spending (₹)',
                 data: reportData.costData.monthlySpending?.map(item => item.amount) || [],
                 backgroundColor: 'rgba(59, 130, 246, 0.8)',
                 borderColor: 'rgba(59, 130, 246, 1)',
@@ -276,19 +276,19 @@ export default function AdvancedReports() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-2xl font-bold text-gray-900">
-                            ${(reportData.costData.totalSpending || 0).toLocaleString()}
+                            ₹{(reportData.costData.totalSpending || 0).toLocaleString()}
                         </div>
                         <div className="text-gray-600">Total Spending</div>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-2xl font-bold text-gray-900">
-                            ${(reportData.costData.averageMonthlySpending || 0).toLocaleString()}
+                            ₹{(reportData.costData.averageMonthlySpending || 0).toLocaleString()}
                         </div>
                         <div className="text-gray-600">Avg Monthly Spending</div>
                     </div>
                     <div className="bg-white rounded-lg shadow p-6">
                         <div className="text-2xl font-bold text-gray-900">
-                            ${(reportData.costData.inventoryValue || 0).toLocaleString()}
+                            ₹{(reportData.costData.inventoryValue || 0).toLocaleString()}
                         </div>
                         <div className="text-gray-600">Current Inventory Value</div>
                     </div>
@@ -321,13 +321,13 @@ export default function AdvancedReports() {
                                                 {component.name}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                ${component.unitPrice.toFixed(2)}
+                                                ₹{component.unitPrice.toFixed(2)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {component.quantity}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                ${(component.unitPrice * component.quantity).toFixed(2)}
+                                                ₹{(component.unitPrice * component.quantity).toFixed(2)}
                                             </td>
                                         </tr>
                                     ))}

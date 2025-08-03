@@ -259,7 +259,7 @@ export default function EditComponent() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price ($)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Unit Price (₹)</label>
                             <input
                                 type="number"
                                 name="unitPrice"

@@ -60,3 +60,14 @@ bundle-stats.json
 # Temporary files
 .temp
 .tmp
+
+# Generated files
+.generated
+*.tsbuildinfo
+.vercel
+.netlify
+storybook-static/
+
+# Browser automation
+/playwright-report/
+/test-results/

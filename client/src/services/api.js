@@ -12,6 +12,8 @@ const api = axios.create({
     timeout: API_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
+        // Adding explicit Accept header
+        'Accept': 'application/json',
     },
     withCredentials: true, // Important for CORS credentials
 });

@@ -250,7 +250,7 @@ export default function Inventory() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            ${component.unitPrice?.toFixed(2) || '0.00'}
+                                            ₹{component.unitPrice?.toFixed(2) || '0.00'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {component.location || 'Not specified'}

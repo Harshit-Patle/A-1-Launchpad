@@ -81,3 +81,24 @@ Desktop.ini
 
 # Dependency directories
 /bower_components/
+
+# API documentation
+/api-docs/
+/swagger-ui/
+/swagger.json
+/swagger.yaml
+
+# Database backups
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+
+# Runtime configuration 
+*.config.js
+!jest.config.js
+!babel.config.js
+
+# Process managers
+.pm2/
+ecosystem.config.js

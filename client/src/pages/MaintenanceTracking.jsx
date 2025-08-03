@@ -306,7 +306,7 @@ export default function MaintenanceTracking() {
                                             {record.performedBy}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {record.cost ? `$${record.cost}` : '-'}
+                                            {record.cost ? `₹${record.cost}` : '-'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end space-x-2">
@@ -482,7 +482,7 @@ export default function MaintenanceTracking() {
                                         value={maintenanceForm.cost}
                                         onChange={(e) => setMaintenanceForm(prev => ({ ...prev, cost: e.target.value }))}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="0.00"
+                                        placeholder="₹0.00"
                                     />
                                 </div>
 
