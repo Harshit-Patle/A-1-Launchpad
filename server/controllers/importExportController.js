@@ -5,25 +5,31 @@ const Log = require('../models/Log');
 // Export components to Excel
 exports.exportComponents = async (req, res) => {
     try {
+        console.log('Exporting components to Excel...');
         const components = await Component.find().sort({ name: 1 });
+        console.log(`Found ${components.length} components to export`);
 
-        // Prepare data for Excel
+        if (components.length === 0) {
+            return res.status(200).json({ msg: 'No components to export' });
+        }
+
+        // Prepare data for Excel - safely handle null values and ensure proper formatting
         const excelData = components.map(component => ({
-            'Component Name': component.name,
-            'Part Number': component.partNumber,
-            'Category': component.category,
-            'Description': component.description,
-            'Quantity': component.quantity,
-            'Unit': component.unit,
-            'Unit Price': component.unitPrice,
-            'Total Value': component.totalValue,
-            'Location': component.location,
-            'Minimum Stock': component.minStock,
-            'Critical Low': component.criticalLow,
-            'Manufacturer': component.manufacturer,
-            'Datasheet Link': component.datasheetLink,
-            'Created Date': component.createdAt.toISOString().split('T')[0],
-            'Last Updated': component.updatedAt.toISOString().split('T')[0]
+            'Component Name': component.name || '',
+            'Part Number': component.partNumber || '',
+            'Category': component.category || '',
+            'Description': component.description || '',
+            'Quantity': component.quantity || 0,
+            'Unit': component.unit || '',
+            'Unit Price': component.unitPrice || 0,
+            'Total Value': component.totalValue || 0,
+            'Location': component.location || '',
+            'Minimum Stock': component.minStock || 0,
+            'Critical Low': component.criticalLow || 0,
+            'Manufacturer': component.manufacturer || '',
+            'Datasheet Link': component.datasheetLink || '',
+            'Created Date': component.createdAt ? component.createdAt.toISOString().split('T')[0] : '',
+            'Last Updated': component.updatedAt ? component.updatedAt.toISOString().split('T')[0] : ''
         }));
 
         // Create workbook and worksheet
@@ -33,14 +39,19 @@ exports.exportComponents = async (req, res) => {
         // Add worksheet to workbook
         XLSX.utils.book_append_sheet(wb, ws, 'Components');
 
-        // Generate buffer
-        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        try {
+            // Generate buffer
+            const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-        // Set headers for download
-        res.setHeader('Content-Disposition', `attachment; filename="components-export-${Date.now()}.xlsx"`);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            // Set headers for download
+            res.setHeader('Content-Disposition', `attachment; filename="components-export-${Date.now()}.xlsx"`);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        res.send(buffer);
+            return res.send(buffer);
+        } catch (xlsxError) {
+            console.error('Error generating Excel file:', xlsxError);
+            return res.status(500).json({ msg: 'Error generating Excel file' });
+        }
     } catch (error) {
         console.error('Export error:', error);
         res.status(500).json({ msg: 'Server error during export' });
@@ -150,6 +161,7 @@ exports.importComponents = async (req, res) => {
 // Export activity logs to Excel
 exports.exportLogs = async (req, res) => {
     try {
+        console.log('Exporting activity logs to Excel...');
         const { startDate, endDate, type, componentId } = req.query;
 
         let query = {};
@@ -157,47 +169,58 @@ exports.exportLogs = async (req, res) => {
             query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
         if (type) query.type = type;
-        if (componentId) query.component = componentId;
+        if (componentId) query.componentId = componentId;
 
         const logs = await Log.find(query)
-            .populate('component', 'name partNumber category')
-            .populate('user', 'name email')
+            .populate('componentId', 'name partNumber category')
+            .populate('userId', 'name email')
             .sort({ date: -1 });
 
-        // Prepare data for Excel
+        console.log(`Found ${logs.length} logs to export`);
+
+        if (logs.length === 0) {
+            return res.status(200).json({ msg: 'No logs to export' });
+        }
+
+        // Prepare data for Excel with safe handling of potentially null values
         const excelData = logs.map(log => ({
-            'Date': log.date.toISOString(),
-            'Type': log.type.toUpperCase(),
-            'Component Name': log.componentName,
-            'Part Number': log.componentPartNumber,
-            'Quantity': log.quantity,
-            'Unit': log.unit,
-            'Old Quantity': log.oldQuantity,
-            'New Quantity': log.newQuantity,
-            'User': log.userName,
-            'User Email': log.user?.email || 'N/A',
-            'Reason': log.reason,
-            'Notes': log.notes,
-            'Location': log.location,
-            'Batch Number': log.batchNumber,
-            'Supplier': log.supplier
+            'Date': log.date ? log.date.toISOString() : new Date().toISOString(),
+            'Type': (log.type || '').toUpperCase(),
+            'Component Name': log.componentName || '',
+            'Quantity': log.quantity || 0,
+            'Remaining Quantity': log.remainingQuantity || 0,
+            'User': log.userName || '',
+            'Reason': log.reason || '',
+            'Notes': log.notes || '',
+            'Location': log.location || '',
+            'Batch Number': log.batchNumber || '',
+            'Supplier': log.supplier || '',
+            'Project': log.project || '',
+            'Invoice Number': log.invoiceNumber || '',
+            'Cost': log.cost || 0,
+            'Date Added': log.date ? log.date.toISOString().split('T')[0] : ''
         }));
 
-        // Create workbook and worksheet
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(excelData);
+        try {
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
 
-        // Add worksheet to workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Activity Logs');
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Activity Logs');
 
-        // Generate buffer
-        const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+            // Generate buffer
+            const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-        // Set headers for download
-        res.setHeader('Content-Disposition', `attachment; filename="activity-logs-export-${Date.now()}.xlsx"`);
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            // Set headers for download
+            res.setHeader('Content-Disposition', `attachment; filename="activity-logs-export-${Date.now()}.xlsx"`);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        res.send(buffer);
+            return res.send(buffer);
+        } catch (xlsxError) {
+            console.error('Error generating Excel file:', xlsxError);
+            return res.status(500).json({ msg: 'Error generating Excel file' });
+        }
     } catch (error) {
         console.error('Export logs error:', error);
         res.status(500).json({ msg: 'Server error during logs export' });

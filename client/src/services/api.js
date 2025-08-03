@@ -136,18 +136,24 @@ export const dashboardAPI = {
 
 // Import/Export API calls
 export const importExportAPI = {
-    exportComponents: (format, params) => api.get(`/import-export/export/${format}`, {
+    exportComponents: (format = 'xlsx', params = {}) => api.get(`/import-export/components/export`, {
         params,
-        responseType: 'blob'
+        responseType: 'blob',
+        validateStatus: status => status >= 200 && status < 500, // Accept 2xx, 3xx, 4xx (but not 5xx)
+    }),
+    exportLogs: (params = {}) => api.get(`/import-export/logs/export`, {
+        params,
+        responseType: 'blob',
+        validateStatus: status => status >= 200 && status < 500, // Accept 2xx, 3xx, 4xx (but not 5xx)
     }),
     importComponents: (file) => {
         const formData = new FormData();
         formData.append('file', file);
-        return api.post('/import-export/import', formData, {
+        return api.post('/import-export/components/import', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
     },
-    getTemplate: (format) => api.get(`/import-export/template/${format}`, {
+    getTemplate: () => api.get(`/import-export/components/template`, {
         responseType: 'blob'
     }),
 };

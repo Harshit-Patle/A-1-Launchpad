@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { useComponents } from '../contexts/ComponentsContext';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import BarcodeScanner from '../components/BarcodeScanner';
+import { importExportAPI } from '../services/api';
 
 export default function ImportExport() {
     const { user } = useAuth();
@@ -49,21 +51,40 @@ export default function ImportExport() {
     const exportComponents = async () => {
         setExporting(true);
         try {
-            const response = await fetch('/api/import-export/components/export', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            console.log('Exporting components...');
 
-            if (!response.ok) {
-                throw new Error('Export failed');
+            // Use the API service with axios which automatically handles authorization headers
+            const response = await importExportAPI.exportComponents('xlsx', {});
+
+            // Check if we have data or a JSON message response
+            if (response.data && response.headers['content-type'] &&
+                response.headers['content-type'].includes('application/json')) {
+                // Handle case where server returned JSON instead of a file
+                const jsonResponse = JSON.parse(new TextDecoder().decode(response.data));
+                toast.info(jsonResponse.msg || 'No data to export');
+                return;
             }
 
-            const blob = await response.blob();
+            // Since we're using axios with responseType: 'blob', the response.data is already a blob
+            const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
             saveAs(blob, `components-export-${new Date().toISOString().split('T')[0]}.xlsx`);
             toast.success('Components exported successfully!');
         } catch (error) {
-            toast.error('Failed to export components');
+            // Check if error response is JSON
+            if (error.response?.data instanceof Blob) {
+                try {
+                    const jsonText = await error.response.data.text();
+                    const jsonError = JSON.parse(jsonText);
+                    toast.error(jsonError.msg || 'Export failed');
+                } catch (e) {
+                    toast.error(`Failed to export components: ${error.message}`);
+                }
+            } else {
+                toast.error(`Failed to export components: ${error.response?.data?.msg || error.message}`);
+            }
             console.error('Export error:', error);
         } finally {
             setExporting(false);
@@ -73,22 +94,41 @@ export default function ImportExport() {
     const exportLogs = async () => {
         setExporting(true);
         try {
-            const response = await fetch('/api/import-export/logs/export', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            console.log('Exporting activity logs...');
 
-            if (!response.ok) {
-                throw new Error('Export failed');
+            // Use our updated API service for logs export
+            const response = await importExportAPI.exportLogs();
+
+            // Check if we have data or a JSON message response
+            if (response.data && response.headers['content-type'] &&
+                response.headers['content-type'].includes('application/json')) {
+                // Handle case where server returned JSON instead of a file
+                const jsonResponse = JSON.parse(new TextDecoder().decode(response.data));
+                toast.info(jsonResponse.msg || 'No logs to export');
+                return;
             }
 
-            const blob = await response.blob();
+            // Create a blob from the response data
+            const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+
             saveAs(blob, `activity-logs-export-${new Date().toISOString().split('T')[0]}.xlsx`);
             toast.success('Activity logs exported successfully!');
         } catch (error) {
-            toast.error('Failed to export activity logs');
-            console.error('Export error:', error);
+            // Check if error response is JSON
+            if (error.response?.data instanceof Blob) {
+                try {
+                    const jsonText = await error.response.data.text();
+                    const jsonError = JSON.parse(jsonText);
+                    toast.error(jsonError.msg || 'Export failed');
+                } catch (e) {
+                    toast.error(`Failed to export activity logs: ${error.message}`);
+                }
+            } else {
+                toast.error(`Failed to export activity logs: ${error.response?.data?.msg || error.message}`);
+            }
+            console.error('Export logs error:', error);
         } finally {
             setExporting(false);
         }
@@ -96,17 +136,13 @@ export default function ImportExport() {
 
     const downloadTemplate = async () => {
         try {
-            const response = await fetch('/api/import-export/components/template', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
+            const response = await importExportAPI.getTemplate();
+
+            // Create a blob from the response data
+            const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             });
 
-            if (!response.ok) {
-                throw new Error('Template download failed');
-            }
-
-            const blob = await response.blob();
             saveAs(blob, 'components-import-template.xlsx');
             toast.success('Template downloaded successfully!');
         } catch (error) {
@@ -123,22 +159,9 @@ export default function ImportExport() {
 
         setImporting(true);
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await fetch('/api/import-export/components/import', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.msg || 'Import failed');
-            }
+            // Use the API service
+            const response = await importExportAPI.importComponents(file);
+            const result = response.data;
 
             toast.success(`Import completed! ${result.results.successful} successful, ${result.results.failed} failed`);
 
@@ -152,48 +175,74 @@ export default function ImportExport() {
             setFile(null);
             document.getElementById('file-input').value = '';
         } catch (error) {
-            toast.error(error.message || 'Failed to import components');
+            toast.error(error.response?.data?.msg || 'Failed to import components');
             console.error('Import error:', error);
         } finally {
             setImporting(false);
         }
     };
 
-    const exportClientSide = () => {
-        if (components.length === 0) {
-            toast.error('No components to export');
-            return;
+    const exportClientSide = async () => {
+        // Check if components have been loaded
+        if (!components || components.length === 0) {
+            try {
+                // Set loading state
+                setExporting(true);
+                toast.info('Fetching components data...');
+
+                // Attempt to fetch components first
+                await fetchComponents({ limit: 1000 }); // Fetch all components by setting a high limit
+
+                // Check again after fetching
+                if (!components || components.length === 0) {
+                    toast.error('No components to export');
+                    setExporting(false);
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to fetch components:', error);
+                toast.error('Failed to fetch components for export');
+                setExporting(false);
+                return;
+            }
         }
 
-        // Prepare data for export
-        const exportData = components.map(component => ({
-            'Component Name': component.name,
-            'Part Number': component.partNumber,
-            'Category': component.category,
-            'Description': component.description || '',
-            'Quantity': component.quantity,
-            'Unit': component.unit,
-            'Unit Price': component.unitPrice || 0,
-            'Location': component.location || '',
-            'Minimum Stock': component.minStock || 0,
-            'Critical Low': component.criticalLow || 0,
-            'Manufacturer': component.manufacturer || '',
-            'Datasheet Link': component.datasheetLink || ''
-        }));
+        try {
+            // Prepare data for export with error handling
+            const exportData = components.map(component => ({
+                'Component Name': component?.name || '',
+                'Part Number': component?.partNumber || '',
+                'Category': component?.category || '',
+                'Description': component?.description || '',
+                'Quantity': component?.quantity || 0,
+                'Unit': component?.unit || '',
+                'Unit Price': component?.unitPrice || 0,
+                'Location': component?.location || '',
+                'Minimum Stock': component?.minStock || 0,
+                'Critical Low': component?.criticalLow || 0,
+                'Manufacturer': component?.manufacturer || '',
+                'Datasheet Link': component?.datasheetLink || ''
+            }));
 
-        // Create workbook and worksheet
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(exportData);
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
 
-        // Add worksheet to workbook
-        XLSX.utils.book_append_sheet(wb, ws, 'Components');
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Components');
 
-        // Write file
-        XLSX.writeFile(wb, `components-export-${new Date().toISOString().split('T')[0]}.xlsx`);
-        toast.success('Components exported successfully!');
+            // Write file
+            XLSX.writeFile(wb, `components-export-${new Date().toISOString().split('T')[0]}.xlsx`);
+            toast.success('Components exported successfully!');
+        } catch (error) {
+            console.error('Quick export error:', error);
+            toast.error('Failed to generate export file');
+        } finally {
+            setExporting(false);
+        }
     };
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'Admin') {
         return (
             <div className="text-center py-12">
                 <div className="max-w-md mx-auto">
@@ -232,9 +281,10 @@ export default function ImportExport() {
                             </button>
                             <button
                                 onClick={exportClientSide}
-                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                disabled={exporting}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
                             >
-                                Quick Export
+                                {exporting ? 'Exporting...' : 'Quick Export'}
                             </button>
                         </div>
                     </div>
