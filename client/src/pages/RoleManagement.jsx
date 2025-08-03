@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { usersAPI } from '../services/api';
 
 export default function RoleManagement() {
     const { user } = useAuth();
@@ -36,14 +37,14 @@ export default function RoleManagement() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/users', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data.users || []);
+            const response = await usersAPI.getAll();
+            if (response.data && Array.isArray(response.data.users)) {
+                setUsers(response.data.users);
+            } else {
+                // Handle cases where users is not an array or is missing
+                setUsers([]);
+                console.error("Fetched data is not in expected format:", response.data);
+                toast.error('Received invalid user data from server.');
             }
         } catch (error) {
             console.error('Failed to fetch users:', error);
@@ -65,28 +66,20 @@ export default function RoleManagement() {
 
         setLoading(true);
         try {
-            const response = await fetch(`/api/users/${selectedUser._id}/role`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    role: newRole,
-                    permissions: permissions
-                })
+            const response = await usersAPI.updateRole(selectedUser._id, {
+                role: newRole,
+                permissions: permissions
             });
 
-            if (response.ok) {
+            if (response.data) {
                 toast.success('User role updated successfully!');
                 setShowModal(false);
                 fetchUsers();
             } else {
-                const error = await response.json();
-                toast.error(error.msg || 'Failed to update user role');
+                toast.error('Failed to update user role');
             }
         } catch (error) {
-            toast.error('Failed to update user role');
+            toast.error(error.response?.data?.msg || 'Failed to update user role');
         } finally {
             setLoading(false);
         }

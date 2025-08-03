@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { logsAPI } from '../services/api';
 
 export default function UserProfile() {
     const { user, updateUser } = useAuth();
@@ -50,6 +51,18 @@ export default function UserProfile() {
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
+        const fetchActivityLogs = async () => {
+            if (!user?._id) return; // Do not fetch if user ID is not available
+
+            try {
+                const response = await logsAPI.getUserLogs({ userId: user._id });
+                setActivityLogs(response.data.logs || []);
+            } catch (error) {
+                console.error('Error fetching activity logs:', error);
+                toast.error('Failed to fetch activity logs');
+            }
+        };
+
         if (user) {
             setProfile({
                 name: user.name || '',
@@ -76,26 +89,8 @@ export default function UserProfile() {
                     apiTokens: user.security?.apiTokens || []
                 }
             });
+            fetchActivityLogs();
         }
-
-        // Fetch user activity logs
-        const fetchActivityLogs = async () => {
-            try {
-                const response = await fetch('/api/users/activity-logs', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setActivityLogs(data);
-                }
-            } catch (error) {
-                console.error('Error fetching activity logs:', error);
-            }
-        };
-
-        fetchActivityLogs();
     }, [user]);
 
     const handleApiTokenFormChange = (e) => {
@@ -353,21 +348,6 @@ export default function UserProfile() {
 
             {/* Profile Card */}
             <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center space-x-4 mb-6">
-                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-2xl font-bold text-blue-600">
-                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </span>
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
-                        <p className="text-gray-600">{user?.email}</p>
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {user?.role}
-                        </span>
-                    </div>
-                </div>
-
                 {/* Tabs */}
                 <div className="flex items-center space-x-4 mb-6">
                     <div className="relative">

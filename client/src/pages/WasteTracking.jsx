@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { wasteAPI } from '../services/api';
 
 export default function WasteTracking() {
     const [wasteEntries, setWasteEntries] = useState([]);
@@ -70,68 +71,80 @@ export default function WasteTracking() {
     const fetchWasteEntries = async () => {
         setLoading(true);
         try {
-            // In a real app, this would be fetched from the server
-            // Simulating API call with sample data
-            setTimeout(() => {
-                const sampleEntries = [
-                    {
-                        id: 1,
-                        componentId: 'CHM-001',
-                        componentName: 'Sodium Hydroxide Solution',
-                        quantity: 500,
-                        unit: 'ml',
-                        wasteType: 'Chemical',
-                        hazardLevel: 'medium',
-                        disposalMethod: 'Neutralization',
-                        disposalDate: '2025-07-15',
-                        disposedBy: 'John Doe',
-                        containerCode: 'WC-20250715-001',
-                        notes: 'Neutralized with HCl before disposal',
-                        isCompliant: true,
-                        attachments: ['disposal-cert-001.pdf']
-                    },
-                    {
-                        id: 2,
-                        componentId: 'BIO-023',
-                        componentName: 'Used Petri Dishes',
-                        quantity: 20,
-                        unit: 'pcs',
-                        wasteType: 'Biological',
-                        hazardLevel: 'medium',
-                        disposalMethod: 'Incineration',
-                        disposalDate: '2025-07-20',
-                        disposedBy: 'Emma Wilson',
-                        containerCode: 'WC-20250720-005',
-                        notes: 'Autoclave sterilized before incineration',
-                        isCompliant: true,
-                        attachments: []
-                    },
-                    {
-                        id: 3,
-                        componentId: 'CHM-045',
-                        componentName: 'Mercury Compounds',
-                        quantity: 100,
-                        unit: 'g',
-                        wasteType: 'Chemical',
-                        hazardLevel: 'high',
-                        disposalMethod: 'Special Disposal',
-                        disposalDate: '2025-07-25',
-                        disposedBy: 'Robert Chen',
-                        containerCode: 'WC-20250725-002',
-                        notes: 'Specialized hazardous waste contractor used',
-                        isCompliant: true,
-                        attachments: ['disposal-cert-045.pdf', 'manifest-045.pdf']
-                    }
-                ];
+            // Build query parameters based on filters
+            const params = {};
+            if (filters.wasteType) params.wasteType = filters.wasteType;
+            if (filters.disposalMethod) params.disposalMethod = filters.disposalMethod;
+            if (filters.search) params.keyword = filters.search;
+            if (filters.startDate) params.startDate = filters.startDate;
+            if (filters.endDate) params.endDate = filters.endDate;
 
-                setWasteEntries(sampleEntries);
-                setLoading(false);
-            }, 500);
+            // Fetch data from API
+            const response = await wasteAPI.getAll(params);
+            setWasteEntries(response.data || []);
+            toast.success("Waste entries loaded successfully");
         } catch (error) {
             console.error('Failed to fetch waste entries:', error);
             toast.error('Failed to load waste tracking data');
+            // Use sample data as fallback
+            useSampleData();
+        } finally {
             setLoading(false);
         }
+    };
+
+    const useSampleData = () => {
+        const sampleEntries = [
+            {
+                id: 1,
+                componentId: 'CHM-001',
+                componentName: 'Sodium Hydroxide Solution',
+                quantity: 500,
+                unit: 'ml',
+                wasteType: 'Chemical',
+                hazardLevel: 'medium',
+                disposalMethod: 'Neutralization',
+                disposalDate: '2025-07-15',
+                disposedBy: 'John Doe',
+                containerCode: 'WC-20250715-001',
+                notes: 'Neutralized with HCl before disposal',
+                isCompliant: true,
+                attachments: ['disposal-cert-001.pdf']
+            },
+            {
+                id: 2,
+                componentId: 'BIO-023',
+                componentName: 'Used Petri Dishes',
+                quantity: 20,
+                unit: 'pcs',
+                wasteType: 'Biological',
+                hazardLevel: 'medium',
+                disposalMethod: 'Incineration',
+                disposalDate: '2025-07-20',
+                disposedBy: 'Emma Wilson',
+                containerCode: 'WC-20250720-005',
+                notes: 'Autoclave sterilized before incineration',
+                isCompliant: true,
+                attachments: []
+            },
+            {
+                id: 3,
+                componentId: 'CHM-045',
+                componentName: 'Mercury Compounds',
+                quantity: 100,
+                unit: 'g',
+                wasteType: 'Chemical',
+                hazardLevel: 'high',
+                disposalMethod: 'Special Disposal',
+                disposalDate: '2025-07-25',
+                disposedBy: 'Robert Chen',
+                containerCode: 'WC-20250725-002',
+                notes: 'Specialized hazardous waste contractor used',
+                isCompliant: true,
+                attachments: ['disposal-cert-045.pdf', 'manifest-045.pdf']
+            }
+        ];
+        setWasteEntries(sampleEntries);
     };
 
     const handleFormChange = (e) => {

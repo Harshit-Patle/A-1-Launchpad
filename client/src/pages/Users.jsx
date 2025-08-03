@@ -13,12 +13,12 @@ export default function Users() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        role: 'user',
+        role: 'User',
         password: ''
     });
 
     useEffect(() => {
-        if (user?.role === 'admin') {
+        if (user?.role === 'Admin') {
             fetchUsers();
         }
     }, [user]);
@@ -27,7 +27,7 @@ export default function Users() {
         setLoading(true);
         try {
             const response = await usersAPI.getAll();
-            setUsers(response.data);
+            setUsers(response.data.users || []);
             setError('');
         } catch (err) {
             setError('Failed to fetch users');
@@ -91,12 +91,12 @@ export default function Users() {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', email: '', role: 'user', password: '' });
+        setFormData({ name: '', email: '', role: 'User', password: '' });
         setShowAddUser(false);
         setEditingUser(null);
     };
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'Admin') {
         return (
             <div className="text-center py-12">
                 <div className="max-w-md mx-auto">
@@ -183,9 +183,10 @@ export default function Users() {
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                 >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="manager">Manager</option>
+                                    <option value="User">User</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Technician">Technician</option>
                                 </select>
                             </div>
                             <div>
@@ -280,9 +281,9 @@ export default function Users() {
                                             {userItem.email}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${userItem.role === 'admin' ? 'bg-red-100 text-red-800' :
-                                                    userItem.role === 'manager' ? 'bg-yellow-100 text-yellow-800' :
-                                                        'bg-green-100 text-green-800'
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${userItem.role === 'Admin' ? 'bg-red-100 text-red-800' :
+                                                userItem.role === 'Manager' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-green-100 text-green-800'
                                                 }`}>
                                                 {userItem.role.charAt(0).toUpperCase() + userItem.role.slice(1)}
                                             </span>

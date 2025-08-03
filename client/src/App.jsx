@@ -8,7 +8,6 @@ import { ComponentsProvider } from './contexts/ComponentsContext';
 import Login from './pages/Login';
 import Inventory from './pages/Inventory';
 import AddComponent from './pages/AddComponent';
-import Dashboard from './pages/Dashboard';
 import EnhancedDashboard from './pages/EnhancedDashboard';
 import Logs from './pages/Logs';
 import Users from './pages/Users';
@@ -20,17 +19,19 @@ import ApprovalWorkflow from './pages/ApprovalWorkflow';
 import UserProfile from './pages/UserProfile';
 import RoleManagement from './pages/RoleManagement';
 import StockMovement from './pages/StockMovement';
+import WasteTracking from './pages/WasteTracking';
+import SystemSettings from './pages/SystemSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 
 function Layout({ children }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
       </div>
@@ -44,6 +45,17 @@ function App() {
       <ComponentsProvider>
         <Router>
           <div className="App">
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/login" element={<Login />} />
@@ -130,7 +142,7 @@ function App() {
               <Route
                 path="/import-export"
                 element={
-                  <ProtectedRoute role="Admin">
+                  <ProtectedRoute requiredRole="Admin">
                     <Layout>
                       <ImportExport />
                     </Layout>
@@ -140,7 +152,7 @@ function App() {
               <Route
                 path="/users"
                 element={
-                  <ProtectedRoute role="Admin">
+                  <ProtectedRoute requiredRole="Admin">
                     <Layout>
                       <Users />
                     </Layout>
@@ -150,7 +162,7 @@ function App() {
               <Route
                 path="/role-management"
                 element={
-                  <ProtectedRoute role="Admin">
+                  <ProtectedRoute requiredRole="Admin">
                     <Layout>
                       <RoleManagement />
                     </Layout>
@@ -168,7 +180,7 @@ function App() {
                 }
               />
               <Route
-                path="/user-profile"
+                path="/profile"
                 element={
                   <ProtectedRoute>
                     <Layout>
@@ -177,20 +189,27 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/waste-tracking"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <WasteTracking />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/system-settings"
+                element={
+                  <ProtectedRoute requiredRole="Admin">
+                    <Layout>
+                      <SystemSettings />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
-
-            <ToastContainer
-              position="top-right"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="light"
-            />
           </div>
         </Router>
       </ComponentsProvider>

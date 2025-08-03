@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// When using Vite's proxy feature, we can simply use '/api' as the base URL
+// This will be proxied to the actual server address defined in vite.config.js
+const API_BASE_URL = '/api';
 
 // Create axios instance
 const api = axios.create({
@@ -9,6 +11,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // Important for CORS credentials
 });
 
 // Request interceptor to add auth token
@@ -80,6 +83,7 @@ export const usersAPI = {
     getAll: (params) => api.get('/users', { params }),
     getById: (id) => api.get(`/users/${id}`),
     update: (id, data) => api.put(`/users/${id}`, data),
+    updateRole: (id, data) => api.put(`/users/${id}/role`, data),
     delete: (id) => api.delete(`/users/${id}`),
     resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data),
     getStats: () => api.get('/users/stats'),
@@ -147,9 +151,27 @@ export const notificationsAPI = {
     delete: (id) => api.delete(`/notifications/${id}`),
 };
 
+// Waste tracking API calls
+export const wasteAPI = {
+    getAll: (params) => api.get('/waste', { params }),
+    getById: (id) => api.get(`/waste/${id}`),
+    create: (data) => api.post('/waste', data),
+    update: (id, data) => api.put(`/waste/${id}`, data),
+    delete: (id) => api.delete(`/waste/${id}`),
+    getStatistics: () => api.get('/waste/statistics/summary'),
+};
+
 // Health check
 export const healthAPI = {
     check: () => api.get('/health'),
+};
+
+// System Settings API calls
+export const settingsAPI = {
+    getAll: () => api.get('/settings'),
+    update: (section, data) => api.put(`/settings/${section}`, data),
+    reset: () => api.post('/settings/reset'),
+    getDefaults: () => api.get('/settings/defaults'),
 };
 
 export default api;

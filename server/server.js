@@ -1,24 +1,23 @@
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
-const { initScheduledTasks } = require('./utils/scheduledTasks');
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 
+// CORS Configuration
+const corsOptions = {
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // React dev server and Vite dev server
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+};
+
 // Middleware
-app.use(cors({
-    origin: [
-        process.env.CLIENT_URL || 'http://localhost:5173',
-        'http://localhost:5174',
-        'http://localhost:3000'
-    ],
-    credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -31,7 +30,10 @@ app.use((req, res, next) => {
 // Connect to Database
 connectDB();
 
-// Routes
+// Handle OPTIONS preflight requests
+app.options('*', cors(corsOptions));
+
+// Routes (incrementally add them back)
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/components', require('./routes/componentRoutes'));
 app.use('/api/logs', require('./routes/logRoutes'));
@@ -42,8 +44,11 @@ app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/approvals', require('./routes/approvalRoutes'));
+// Now using the fixed componentSettings route
 app.use('/api/component-settings', require('./routes/componentSettings'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+app.use('/api/waste', require('./routes/wasteRoutes'));
+app.use('/api/settings', require('./routes/settingsRoutes'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -64,29 +69,15 @@ app.use('*', (req, res) => {
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
 
-    if (err.name === 'ValidationError') {
-        const errors = Object.values(err.errors).map(e => e.message);
-        return res.status(400).json({ msg: 'Validation Error', errors });
-    }
-
-    if (err.code === 11000) {
-        const field = Object.keys(err.keyValue)[0];
-        return res.status(400).json({ msg: `${field} already exists` });
-    }
-
     res.status(500).json({
         msg: 'Server Error',
         error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
     });
 });
 
-const PORT = process.env.PORT || 5000;
+// Force port 5002 to avoid conflicts
+const PORT = 5002;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
-
-    // Initialize scheduled tasks (including notification checks)
-    initScheduledTasks();
 });

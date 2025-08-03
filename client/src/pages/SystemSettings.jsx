@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { settingsAPI } from '../services/api';
 
 export default function SystemSettings() {
     const [settings, setSettings] = useState({
@@ -48,17 +49,12 @@ export default function SystemSettings() {
     const fetchSettings = async () => {
         setLoading(true);
         try {
-            // In a real app, this would fetch from the server
-            const response = await fetch('/api/settings', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setSettings(data);
-            }
+            const response = await settingsAPI.getAll();
+            setSettings(response.data);
+            toast.success("Settings loaded successfully");
         } catch (error) {
-            console.error('Failed to load settings:', error);
+            console.error('Error fetching settings:', error);
+            toast.error('Failed to load settings');
             // Using default settings if fetch fails
         } finally {
             setLoading(false);
@@ -80,22 +76,11 @@ export default function SystemSettings() {
         setLoading(true);
 
         try {
-            // In a real app, this would send to the server
-            const response = await fetch('/api/settings', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(settings)
-            });
-
-            if (response.ok) {
-                toast.success('Settings saved successfully!');
-            } else {
-                const error = await response.json();
-                toast.error(error.msg || 'Failed to save settings');
+            // Save each section separately
+            for (const section in settings) {
+                await settingsAPI.update(section, settings[section]);
             }
+            toast.success('Settings saved successfully!');
         } catch (error) {
             console.error('Error saving settings:', error);
             toast.error('Failed to save settings');
@@ -609,7 +594,26 @@ export default function SystemSettings() {
                     <div className="bg-gray-50 px-6 py-3 flex justify-end">
                         <button
                             type="button"
+                            onClick={async () => {
+                                if (window.confirm("Are you sure you want to reset to default settings?")) {
+                                    try {
+                                        await settingsAPI.reset();
+                                        toast.success("Settings reset to defaults");
+                                        fetchSettings();
+                                    } catch (error) {
+                                        console.error("Error resetting settings:", error);
+                                        toast.error("Failed to reset settings");
+                                    }
+                                }
+                            }}
+                            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2"
+                        >
+                            Reset to Default
+                        </button>
+                        <button
+                            type="button"
                             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            onClick={() => fetchSettings()}
                         >
                             Cancel
                         </button>
