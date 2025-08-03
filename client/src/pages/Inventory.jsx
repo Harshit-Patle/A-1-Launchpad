@@ -3,6 +3,7 @@ import { useComponents } from '../contexts/ComponentsContext';
 import { Link } from 'react-router-dom';
 import QRCodeGenerator from '../components/QRCodeGenerator';
 import { componentsAPI } from '../services/api';
+import useResponsiveTables from '../hooks/useResponsiveTables';
 
 export default function Inventory() {
     const {
@@ -22,6 +23,13 @@ export default function Inventory() {
     const [newQuantity, setNewQuantity] = useState('');
     const [showQRCode, setShowQRCode] = useState(null);
     const [categories, setCategories] = useState([]);
+
+    // Create a reference for the table container and make it responsive
+    const tableContainerRef = useResponsiveTables({
+        tableSelector: '.inventory-table',
+        enableCardView: true,
+        dependencies: [components] // Re-apply when components change
+    });
 
     // Fetch categories for the filter dropdown
     useEffect(() => {
@@ -159,8 +167,8 @@ export default function Inventory() {
 
             {/* Components Table */}
             <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                <div ref={tableContainerRef} className="overflow-x-auto responsive-table-container">
+                    <table id="inventory-components-table" className="min-w-full divide-y divide-gray-200 responsive-table inventory-table">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

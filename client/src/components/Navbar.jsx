@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useComponents } from '../contexts/ComponentsContext';
 import NotificationCenter from './NotificationCenter';
 
-export default function Navbar() {
+export default function Navbar({ setSidebarOpen }) {
     const { user, logout } = useAuth();
     const { lowStockComponents, fetchLowStock } = useComponents();
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -29,15 +29,30 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <nav className="bg-white shadow-sm border-b border-gray-200 px-4 md:px-6 py-4">
             <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Laboratory Inventory Management System
-                    </h1>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Welcome back, {user?.name}
-                    </p>
+                <div className="flex items-center">
+                    {/* Menu button - visible on tablets too (lg:hidden instead of md:hidden) */}
+                    <button
+                        type="button"
+                        className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 mr-3"
+                        onClick={() => setSidebarOpen(true)}
+                    >
+                        <span className="sr-only">Open menu</span>
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">
+                            <span className="lg:hidden">LIMS</span>
+                            <span className="hidden lg:inline">Laboratory Inventory Management System</span>
+                        </h1>
+                        <p className="text-xs md:text-sm text-gray-600 mt-1 truncate">
+                            Welcome back, {user?.name}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex items-center space-x-4">

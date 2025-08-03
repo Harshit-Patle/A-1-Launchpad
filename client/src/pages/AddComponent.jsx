@@ -172,7 +172,7 @@ export default function AddComponent() {
                     {/* Inventory Details */}
                     <div>
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Inventory Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 form-grid">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Quantity <span className="text-red-500">*</span>

@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+/* Responsive styles */
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Toast container responsive styles */
+.toast-container {
+  width: auto !important;
+  max-width: 90vw !important;
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    padding: 0 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+  }
+  
+  .toast {
+    margin-bottom: 0.5rem !important;
+    padding: 10px !important;
+  }
+}
+
+/* Additional responsive utilities */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for mobile tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix for responsive tables */
+table {
+  min-width: 100%;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .responsive-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Fix for input fields on mobile */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+  }
+}
