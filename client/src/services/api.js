@@ -115,6 +115,12 @@ export const reportsAPI = {
     getDashboardAnalytics: () => api.get('/reports/dashboard'),
 };
 
+// Dashboard API calls
+export const dashboardAPI = {
+    getMonthlyMovement: (params) => api.get('/dashboard/monthly-movement', { params }),
+    getCriticalComponents: () => api.get('/dashboard/critical-components'),
+};
+
 // Import/Export API calls
 export const importExportAPI = {
     exportComponents: (format, params) => api.get(`/import-export/export/${format}`, {

@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Inventory from './pages/Inventory';
 import AddComponent from './pages/AddComponent';
 import Dashboard from './pages/Dashboard';
+import EnhancedDashboard from './pages/EnhancedDashboard';
 import Logs from './pages/Logs';
 import Users from './pages/Users';
 import ImportExport from './pages/ImportExport';
@@ -51,7 +52,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <Dashboard />
+                      <EnhancedDashboard />
                     </Layout>
                   </ProtectedRoute>
                 }

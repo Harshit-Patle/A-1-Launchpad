@@ -43,6 +43,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/approvals', require('./routes/approvalRoutes'));
 app.use('/api/component-settings', require('./routes/componentSettings'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
