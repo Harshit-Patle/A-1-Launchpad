@@ -63,6 +63,12 @@ export const componentsAPI = {
                 delete cleanParams[key];
             }
         });
+
+        // Add timestamp to prevent caching
+        if (params?.forceRefresh) {
+            cleanParams._t = Date.now();
+        }
+
         return api.get('/components', { params: cleanParams });
     },
     getById: (id) => api.get(`/components/${id}`),

@@ -34,13 +34,26 @@ exports.getAllReservations = async (req, res) => {
 // Create new reservation
 exports.createReservation = async (req, res) => {
     try {
+        console.log('Creating new reservation with data:', req.body);
         const { componentId, quantity, startDate, endDate, purpose, notes } = req.body;
+
+        // Validate required fields
+        if (!componentId || !quantity || !startDate || !endDate || !purpose) {
+            return res.status(400).json({
+                msg: 'Missing required fields',
+                required: { componentId, quantity, startDate, endDate, purpose },
+                received: req.body
+            });
+        }
 
         // Check if component exists and has sufficient available quantity
         const component = await Component.findById(componentId);
         if (!component) {
+            console.log(`Component not found with ID: ${componentId}`);
             return res.status(404).json({ msg: 'Component not found' });
         }
+
+        console.log(`Found component: ${component.name}, checking availability...`);
 
         // Calculate currently reserved quantity
         const activeReservations = await Reservation.find({
@@ -53,30 +66,37 @@ exports.createReservation = async (req, res) => {
         const reservedQuantity = activeReservations.reduce((sum, reservation) => sum + reservation.quantity, 0);
         const availableQuantity = component.quantity - reservedQuantity;
 
+        console.log(`Reserved: ${reservedQuantity}, Available: ${availableQuantity}, Requested: ${quantity}`);
+
         if (availableQuantity < quantity) {
             return res.status(400).json({
                 msg: `Insufficient available quantity. Available: ${availableQuantity}, Requested: ${quantity}`
             });
         }
 
-        const reservation = new Reservation({
+        const reservationData = {
             componentId,
             componentName: component.name,
             partNumber: component.partNumber,
             userId: req.user.id,
             userName: req.user.name,
-            quantity,
+            quantity: parseInt(quantity),
             startDate,
             endDate,
             purpose,
             notes
-        });
+        };
 
-        await reservation.save();
-        res.status(201).json(reservation);
+        console.log('Creating reservation with data:', reservationData);
+
+        const reservation = new Reservation(reservationData);
+        const savedReservation = await reservation.save();
+
+        console.log('Reservation created successfully:', savedReservation);
+        res.status(201).json(savedReservation);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: 'Server error' });
+        console.error('Error creating reservation:', error);
+        res.status(500).json({ msg: 'Server error creating reservation', error: error.message });
     }
 };
 
@@ -163,14 +183,34 @@ exports.deleteReservation = async (req, res) => {
 // Get user's reservations
 exports.getUserReservations = async (req, res) => {
     try {
+        console.log(`Getting reservations for user ID: ${req.user.id}`);
+
         const reservations = await Reservation.find({ userId: req.user.id })
             .populate('componentId', 'name partNumber location')
             .sort({ createdAt: -1 });
 
+        console.log(`Found ${reservations.length} reservations for user`);
+
+        // Debug output to help diagnose issues
+        if (reservations.length === 0) {
+            // Check if there are any reservations at all
+            const totalReservations = await Reservation.countDocuments();
+            console.log(`Total reservations in system: ${totalReservations}`);
+
+            if (totalReservations > 0) {
+                // Check if there might be an issue with user ID matching
+                const sampleReservation = await Reservation.findOne();
+                console.log('Sample reservation user ID:', sampleReservation?.userId);
+                console.log('Current user ID:', req.user.id);
+                console.log('User ID types match:',
+                    sampleReservation?.userId && typeof sampleReservation.userId === typeof req.user.id);
+            }
+        }
+
         res.json(reservations);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: 'Server error' });
+        console.error('Error fetching user reservations:', error);
+        res.status(500).json({ msg: 'Server error fetching reservations' });
     }
 };
 

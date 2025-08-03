@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, LineElement, PointElement } from 'chart.js';
 import { Bar, Doughnut, Line, Pie } from 'react-chartjs-2';
+import { toast } from 'react-toastify';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
 
@@ -9,6 +10,10 @@ export default function AdvancedReports() {
     const { user } = useAuth();
     const [reportData, setReportData] = useState({});
     const [loading, setLoading] = useState(true);
+    const [exportLoading, setExportLoading] = useState({
+        pdf: false,
+        xlsx: false
+    });
     const [selectedReport, setSelectedReport] = useState('inventory-overview');
     const [dateRange, setDateRange] = useState({
         startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days ago
@@ -39,24 +44,54 @@ export default function AdvancedReports() {
     };
 
     const exportReport = async (format) => {
+        // Set loading state for the specific format
+        setExportLoading(prev => ({ ...prev, [format]: true }));
+
         try {
+            toast.info(`Preparing ${format.toUpperCase()} export...`);
+
             const response = await fetch(`/api/reports/${selectedReport}/export?format=${format}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
 
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${selectedReport}-${new Date().toISOString().split('T')[0]}.${format}`;
-                a.click();
-                window.URL.revokeObjectURL(url);
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Export failed: ${errorText || response.statusText}`);
             }
+
+            // Verify the content type
+            const contentType = response.headers.get('content-type');
+            if (format === 'pdf' && !contentType?.includes('application/pdf')) {
+                throw new Error(`Expected PDF but got ${contentType}`);
+            }
+
+            if (format === 'xlsx' && !contentType?.includes('spreadsheetml')) {
+                throw new Error(`Expected Excel file but got ${contentType}`);
+            }
+
+            const blob = await response.blob();
+
+            if (blob.size === 0) {
+                throw new Error('Received empty response from server');
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedReport}-${new Date().toISOString().split('T')[0]}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            toast.success(`${format.toUpperCase()} export completed successfully!`);
         } catch (error) {
             console.error('Failed to export report:', error);
+            toast.error(`Export failed: ${error.message}`);
+        } finally {
+            setExportLoading(prev => ({ ...prev, [format]: false }));
         }
     };
 
@@ -404,15 +439,39 @@ export default function AdvancedReports() {
                 <div className="flex space-x-2">
                     <button
                         onClick={() => exportReport('pdf')}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                        disabled={exportLoading.pdf}
+                        className={`px-4 py-2 text-white rounded-lg transition-colors flex items-center ${exportLoading.pdf ? 'bg-red-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
+                            }`}
                     >
-                        Export PDF
+                        {exportLoading.pdf ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            </>
+                        ) : (
+                            'Export PDF'
+                        )}
                     </button>
                     <button
                         onClick={() => exportReport('xlsx')}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        disabled={exportLoading.xlsx}
+                        className={`px-4 py-2 text-white rounded-lg transition-colors flex items-center ${exportLoading.xlsx ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                            }`}
                     >
-                        Export Excel
+                        {exportLoading.xlsx ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            </>
+                        ) : (
+                            'Export Excel'
+                        )}
                     </button>
                 </div>
             </div>
