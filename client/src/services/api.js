@@ -1,13 +1,15 @@
 import axios from 'axios';
 
+// Use environment variables if available, otherwise fallback to default values
 // When using Vite's proxy feature, we can simply use '/api' as the base URL
 // This will be proxied to the actual server address defined in vite.config.js
-const API_BASE_URL = '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000', 10);
 
 // Create axios instance
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 10000,
+    timeout: API_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
     },
