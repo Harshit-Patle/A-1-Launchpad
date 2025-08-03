@@ -21,7 +21,6 @@ import UserProfile from './pages/UserProfile';
 import RoleManagement from './pages/RoleManagement';
 import StockMovement from './pages/StockMovement';
 import WasteTracking from './pages/WasteTracking';
-import SystemSettings from './pages/SystemSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -206,16 +205,6 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <WasteTracking />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/system-settings"
-                element={
-                  <ProtectedRoute requiredRole="Admin">
-                    <Layout>
-                      <SystemSettings />
                     </Layout>
                   </ProtectedRoute>
                 }

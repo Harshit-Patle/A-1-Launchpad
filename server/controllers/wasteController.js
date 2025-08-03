@@ -225,7 +225,7 @@ const getWasteStatistics = asyncHandler(async (req, res) => {
 // @desc    Get waste statistics summary
 // @route   GET /api/waste/statistics/summary
 // @access  Private
-const getWasteStatistics = asyncHandler(async (req, res) => {
+const getWasteStatisticsSummary = asyncHandler(async (req, res) => {
     try {
         // Get total number of waste entries
         const totalEntries = await WasteEntry.countDocuments();
@@ -300,4 +300,5 @@ module.exports = {
     updateWasteEntry,
     deleteWasteEntry,
     getWasteStatistics,
+    getWasteStatisticsSummary,
 };

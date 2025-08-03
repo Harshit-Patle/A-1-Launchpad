@@ -4,6 +4,7 @@ const auth = require('../middleware/authMiddleware');
 const { roleMiddleware, adminOnly } = require('../middleware/roleMiddleware');
 const { check, validationResult } = require('express-validator');
 const WasteEntry = require('../models/WasteEntry');
+const wasteController = require('../controllers/wasteController');
 
 /**
  * @route   GET /api/waste
@@ -202,69 +203,6 @@ router.get('/reports/summary', auth, async (req, res) => {
  * @desc    Get waste statistics summary for dashboard
  * @access  Private
  */
-router.get('/statistics/summary', auth, async (req, res) => {
-    try {
-        // Get total waste entries count
-        const totalEntries = await WasteEntry.countDocuments();
-
-        // Count high hazard items
-        const highHazardCount = await WasteEntry.countDocuments({ hazardLevel: { $in: ['high', 'extreme'] } });
-
-        // Group by waste type
-        const wasteTypes = await WasteEntry.aggregate([
-            { $group: { _id: '$wasteType', count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-        ]);
-
-        // Group by disposal method
-        const disposalMethods = await WasteEntry.aggregate([
-            { $group: { _id: '$disposalMethod', count: { $sum: 1 } } },
-            { $sort: { count: -1 } },
-        ]);
-
-        // Group by month (last 6 months)
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-        const monthlyTrends = await WasteEntry.aggregate([
-            {
-                $match: {
-                    disposalDate: { $gte: sixMonthsAgo }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: '%Y-%m', date: '$disposalDate' } },
-                    count: { $sum: 1 },
-                },
-            },
-            { $sort: { _id: 1 } },
-        ]);
-
-        // Get total waste quantity by unit
-        const quantityByUnit = await WasteEntry.aggregate([
-            {
-                $group: {
-                    _id: '$unit',
-                    totalQuantity: { $sum: '$quantity' }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        res.json({
-            totalEntries,
-            highHazardCount,
-            wasteTypes,
-            disposalMethods,
-            monthlyTrends,
-            quantityByUnit,
-            lastUpdated: new Date()
-        });
-    } catch (err) {
-        console.error('Error generating waste statistics:', err);
-        res.status(500).json({ msg: 'Server error' });
-    }
-});
+router.get('/statistics/summary', auth, wasteController.getWasteStatisticsSummary);
 
 module.exports = router;
