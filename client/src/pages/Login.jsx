@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Footer from '../components/Footer';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -129,19 +130,8 @@ export default function Login() {
                             </button>
                         </div>
                     </div>
-
-                    <div className="text-center">
-                        <p className="text-sm text-gray-600">
-                            Demo credentials:
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Admin: admin@inventory.com / Admin123!
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            User: john@inventory.com / User123!
-                        </p>
-                    </div>
                 </form>
+                <Footer variant="login" />
             </div>
         </div>
     );

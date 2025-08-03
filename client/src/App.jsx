@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,9 +30,7 @@ import Sidebar from './components/Sidebar';
 
 function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isTabletOrMobile, setIsTabletOrMobile] = useState(false);
-
-  // Check screen size on mount and when window resizes
+  const [isTabletOrMobile, setIsTabletOrMobile] = useState(false);  // Check screen size on mount and when window resizes
   useEffect(() => {
     const checkScreenSize = () => {
       setIsTabletOrMobile(window.innerWidth < 1024);
@@ -43,13 +42,15 @@ function Layout({ children }) {
   }, []);
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 px-4 md:px-6 py-6 overflow-y-auto">
-          {children}
-        </main>
+    <div className="flex flex-col h-screen bg-gray-50">
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Navbar setSidebarOpen={setSidebarOpen} />
+          <main className="flex-1 px-4 md:px-6 py-6 overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
