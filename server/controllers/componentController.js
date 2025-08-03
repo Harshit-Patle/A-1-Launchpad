@@ -18,12 +18,23 @@ exports.getAll = async (req, res) => {
 
         const filter = { isActive: true };
 
-        if (category && category !== 'all') {
+        if (category && category !== '' && category !== 'all') {
             filter.category = category;
         }
 
-        if (location && location !== 'all') {
+        if (location && location !== '' && location !== 'all') {
             filter.location = location;
+        }
+
+        // Handle stock status filter
+        if (req.query.stockStatus) {
+            if (req.query.stockStatus === 'lowStock') {
+                filter.$expr = { $lte: ['$quantity', '$criticalLow'] };
+            } else if (req.query.stockStatus === 'outOfStock') {
+                filter.quantity = 0;
+            } else if (req.query.stockStatus === 'inStock') {
+                filter.quantity = { $gt: 0 };
+            }
         }
 
         if (lowStock === 'true') {
@@ -42,19 +53,25 @@ exports.getAll = async (req, res) => {
         const sortOptions = {};
         sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
+        // Parse pagination parameters
+        const pageNum = parseInt(page, 10) || 1;
+        const limitNum = parseInt(limit, 10) || 10;
+
         const components = await Component.find(filter)
             .populate('addedBy', 'name')
             .sort(sortOptions)
-            .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .limit(limitNum)
+            .skip((pageNum - 1) * limitNum);
 
         const total = await Component.countDocuments(filter);
+        const totalPages = Math.ceil(total / limitNum);
 
         res.json({
             components,
-            totalPages: Math.ceil(total / limit),
-            currentPage: page,
-            total
+            totalPages: totalPages,
+            currentPage: pageNum,
+            total: total,
+            limit: limitNum
         });
     } catch (error) {
         console.error(error);

@@ -55,7 +55,16 @@ export const authAPI = {
 
 // Components API calls
 export const componentsAPI = {
-    getAll: (params) => api.get('/components', { params }),
+    getAll: (params) => {
+        // Clean up empty or null parameters
+        const cleanParams = { ...params };
+        Object.keys(cleanParams).forEach(key => {
+            if (cleanParams[key] === '' || cleanParams[key] === null || cleanParams[key] === undefined) {
+                delete cleanParams[key];
+            }
+        });
+        return api.get('/components', { params: cleanParams });
+    },
     getById: (id) => api.get(`/components/${id}`),
     create: (data) => api.post('/components', data),
     update: (id, data) => api.put(`/components/${id}`, data),

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useComponents } from '../contexts/ComponentsContext';
 import { Link } from 'react-router-dom';
 import QRCodeGenerator from '../components/QRCodeGenerator';
+import { componentsAPI } from '../services/api';
 
 export default function Inventory() {
     const {
@@ -11,6 +12,7 @@ export default function Inventory() {
         deleteComponent,
         filters,
         setFilters,
+        setPagination,
         pagination,
         loading,
         error
@@ -19,10 +21,30 @@ export default function Inventory() {
     const [editingQuantity, setEditingQuantity] = useState(null);
     const [newQuantity, setNewQuantity] = useState('');
     const [showQRCode, setShowQRCode] = useState(null);
+    const [categories, setCategories] = useState([]);
+
+    // Fetch categories for the filter dropdown
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await componentsAPI.getCategories();
+                setCategories(response.data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     useEffect(() => {
         fetchComponents();
-    }, [filters, pagination.page]);
+    }, []); // Only fetch on initial load, setFilters will trigger fetches after that
+
+    // Debug pagination state
+    useEffect(() => {
+        console.log('Current pagination state:', pagination);
+    }, [pagination]);
 
     const handleQuantityEdit = (componentId, currentQuantity) => {
         setEditingQuantity(componentId);
@@ -50,7 +72,8 @@ export default function Inventory() {
     };
 
     const handleFilterChange = (key, value) => {
-        setFilters({ ...filters, [key]: value });
+        // Reset to page 1 when filters change
+        setFilters({ ...filters, [key]: value, page: 1 });
     };
 
     const getStockStatus = (component) => {
@@ -104,11 +127,11 @@ export default function Inventory() {
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             <option value="">All Categories</option>
-                            <option value="Chemical">Chemical</option>
-                            <option value="Equipment">Equipment</option>
-                            <option value="Reagent">Reagent</option>
-                            <option value="Glassware">Glassware</option>
-                            <option value="Consumable">Consumable</option>
+                            {categories.map(category => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
                         </select>
                     </div>
                     <div>
@@ -264,19 +287,32 @@ export default function Inventory() {
             </div>
 
             {/* Pagination */}
-            {pagination.totalPages > 1 && (
+            {pagination.total > 0 && (
                 <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-lg shadow">
                     <div className="flex flex-1 justify-between sm:hidden">
                         <button
-                            onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
-                            disabled={pagination.page === 1}
+                            onClick={() => {
+                                const currentPage = parseInt(pagination.page);
+                                const prevPage = Math.max(1, currentPage - 1);
+                                console.log(`Moving from page ${currentPage} to ${prevPage} (mobile)`);
+                                setPagination({ page: prevPage });
+                            }}
+                            disabled={parseInt(pagination.page) <= 1}
                             className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                             Previous
                         </button>
+                        <span className="text-sm font-medium text-gray-700 px-4 py-2">
+                            Page {parseInt(pagination.page) || 1} of {parseInt(pagination.totalPages) || 1}
+                        </span>
                         <button
-                            onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
-                            disabled={pagination.page === pagination.totalPages}
+                            onClick={() => {
+                                const currentPage = parseInt(pagination.page);
+                                const nextPage = Math.min(parseInt(pagination.totalPages), currentPage + 1);
+                                console.log(`Moving from page ${currentPage} to ${nextPage} (mobile)`);
+                                setPagination({ page: nextPage });
+                            }}
+                            disabled={parseInt(pagination.page) >= parseInt(pagination.totalPages)}
                             className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                             Next
@@ -286,40 +322,68 @@ export default function Inventory() {
                         <div>
                             <p className="text-sm text-gray-700">
                                 Showing{' '}
-                                <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span>
+                                <span className="font-medium">
+                                    {pagination.total > 0 ? ((pagination.page - 1) * pagination.limit + 1) : 0}
+                                </span>
                                 {' '}to{' '}
                                 <span className="font-medium">
-                                    {Math.min(pagination.page * pagination.limit, pagination.total)}
+                                    {pagination.total > 0 ? Math.min(pagination.page * pagination.limit, pagination.total) : 0}
                                 </span>
                                 {' '}of{' '}
-                                <span className="font-medium">{pagination.total}</span>
+                                <span className="font-medium">{pagination.total || 0}</span>
                                 {' '}results
                             </p>
                         </div>
                         <div>
                             <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                                 <button
-                                    onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
-                                    disabled={pagination.page === 1}
+                                    onClick={() => {
+                                        const currentPage = parseInt(pagination.page);
+                                        const prevPage = Math.max(1, currentPage - 1);
+                                        console.log(`Moving from page ${currentPage} to ${prevPage}`);
+                                        setPagination({ page: prevPage });
+                                    }}
+                                    disabled={pagination.page <= 1}
                                     className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                                 >
                                     Previous
                                 </button>
-                                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                                    <button
-                                        key={page}
-                                        onClick={() => setFilters({ ...filters, page })}
-                                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${page === pagination.page
+                                {pagination.totalPages > 0 && Array.from({ length: Math.min(pagination.totalPages, 10) }, (_, i) => {
+                                    // If we have many pages, show a sensible range around the current page
+                                    let pageToShow;
+                                    if (pagination.totalPages <= 10) {
+                                        // Show all pages if 10 or fewer
+                                        pageToShow = i + 1;
+                                    } else {
+                                        // Calculate the range to show centered around current page
+                                        const currentPage = parseInt(pagination.page);
+                                        const startPage = Math.max(1, currentPage - 4);
+                                        pageToShow = startPage + i;
+                                        if (pageToShow > pagination.totalPages) return null;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={pageToShow}
+                                            onClick={() => setPagination({ page: pageToShow })}
+                                            className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${parseInt(pageToShow) === parseInt(pagination.page)
                                                 ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                                                 : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
+                                                }`}
+                                            aria-current={parseInt(pageToShow) === parseInt(pagination.page) ? "page" : undefined}
+                                        >
+                                            {pageToShow}
+                                        </button>
+                                    );
+                                }).filter(Boolean)}
                                 <button
-                                    onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
-                                    disabled={pagination.page === pagination.totalPages}
+                                    onClick={() => {
+                                        const currentPage = parseInt(pagination.page);
+                                        const nextPage = Math.min(pagination.totalPages, currentPage + 1);
+                                        console.log(`Moving from page ${currentPage} to ${nextPage}`);
+                                        setPagination({ page: nextPage });
+                                    }}
+                                    disabled={parseInt(pagination.page) >= pagination.totalPages}
                                     className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                                 >
                                     Next

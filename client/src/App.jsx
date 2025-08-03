@@ -8,6 +8,7 @@ import { ComponentsProvider } from './contexts/ComponentsContext';
 import Login from './pages/Login';
 import Inventory from './pages/Inventory';
 import AddComponent from './pages/AddComponent';
+import EditComponent from './pages/EditComponent';
 import EnhancedDashboard from './pages/EnhancedDashboard';
 import Logs from './pages/Logs';
 import Users from './pages/Users';
@@ -85,6 +86,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <AddComponent />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/edit-component/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <EditComponent />
                     </Layout>
                   </ProtectedRoute>
                 }
