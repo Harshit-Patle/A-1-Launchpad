@@ -1,0 +1,45 @@
+# Node.js specific
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnpm-debug.log
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Build output
+/dist/
+/build/
+
+# Dependency directories
+/bower_components/
+
+# Coverage directory
+/coverage/
+/.nyc_output/
+
+# IDE
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Misc
+.DS_Store
+Thumbs.db
+
+# MongoDB data
+/data/db/
+
+# Temp files
+*.tmp
+*.temp
+.tmp/
+.temp/
