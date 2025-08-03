@@ -1,6 +1,8 @@
 # Dependencies
-node_modules/
-package-lock.json
+node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
 # Environment variables
 .env
