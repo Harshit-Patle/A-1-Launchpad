@@ -408,31 +408,45 @@ exports.exportReport = async (req, res) => {
                 }
             });
 
-            // Add page numbers and footer to each page
-            let pages = doc.bufferedPageRange().count;
-            for (let i = 0; i < pages; i++) {
-                doc.switchToPage(i);
+            // Add page numbering functionality via events
+            let pageCount = 0;
 
-                // Add page number at the bottom center
-                doc.fontSize(10)
-                    .fillColor('#888888')
-                    .text(
-                        `Page ${i + 1} of ${pages}`,
-                        0,
-                        doc.page.height - 50,
-                        { align: 'center' }
-                    );
+            // Count pages
+            doc.on('pageAdded', () => {
+                pageCount++;
+            });
 
-                // Add footer with company name and timestamp
-                doc.fontSize(8)
-                    .fillColor('#888888')
-                    .text(
-                        `A-1 Launchpad Inventory Management | Generated: ${new Date().toLocaleString()}`,
-                        50,
-                        doc.page.height - 30,
-                        { align: 'center', width: doc.page.width - 100 }
-                    );
-            }
+            // Use an event handler to add page numbers after all pages are created
+            doc.on('beforeEnd', () => {
+                // Add page numbers and footer to each page
+                for (let i = 0; i < pageCount; i++) {
+                    try {
+                        doc.switchToPage(i);
+
+                        // Add page number at the bottom center
+                        doc.fontSize(10)
+                            .fillColor('#888888')
+                            .text(
+                                `Page ${i + 1} of ${pageCount}`,
+                                0,
+                                doc.page.height - 50,
+                                { align: 'center' }
+                            );
+
+                        // Add footer with company name and timestamp
+                        doc.fontSize(8)
+                            .fillColor('#888888')
+                            .text(
+                                `A-1 Launchpad Inventory Management | Generated: ${new Date().toLocaleString()}`,
+                                50,
+                                doc.page.height - 30,
+                                { align: 'center', width: doc.page.width - 100 }
+                            );
+                    } catch (err) {
+                        console.warn(`Could not add page number to page ${i}:`, err.message);
+                    }
+                }
+            });
 
             // End the document
             doc.end();

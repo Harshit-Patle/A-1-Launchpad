@@ -1,6 +1,6 @@
 # A-1 Launchpad - Laboratory Inventory Management System
 
-![LIMS Banner](https://i.imgur.com/lnKKpAv.png)
+![LIMS Banner](Mockups/banner.png)
 
 ## Project Overview
 
@@ -8,12 +8,6 @@ A-1 Launchpad LIMS (Laboratory Inventory Management System) is a comprehensive w
 
 This full-stack responsive application offers intuitive component management, stock movement tracking, powerful search functionality, role-based access control, and an insightful dashboard to help labs maintain optimal inventory levels and prevent project delays due to stockouts or obsolete components.
 
-## Live Demo
-
-- **Demo URL**: [https://a1-launchpad.example.com](https://a1-launchpad.example.com)
-- **Test Credentials**: 
-  - Admin: admin@example.com / admin123
-  - User: user@example.com / user123
 
 ## Table of Contents
 
@@ -247,7 +241,7 @@ The application supports three user roles, each with different permissions:
 
 ### Dashboard
 
-![Dashboard Screenshot](https://i.imgur.com/example1.png)
+![Dashboard Screenshot](Mockups/dashboard.png)
 
 The dashboard provides a comprehensive overview of inventory status with:
 - Inward/outward movement charts
@@ -257,7 +251,7 @@ The dashboard provides a comprehensive overview of inventory status with:
 
 ### Inventory Management
 
-![Inventory Screenshot](https://i.imgur.com/example2.png)
+![Inventory Screenshot](Mockups/inventory.png)
 
 The inventory screen allows users to:
 - View all components with filtering options
@@ -267,7 +261,7 @@ The inventory screen allows users to:
 
 ### Stock Movement
 
-![Stock Movement Screenshot](https://i.imgur.com/example3.png)
+![Stock Movement Screenshot](Mockups/stockmovement.png)
 
 The stock movement functionality enables:
 - Recording of inward (additions) to inventory
@@ -277,7 +271,7 @@ The stock movement functionality enables:
 
 ### Notifications
 
-![Notifications Screenshot](https://i.imgur.com/example4.png)
+![Notifications Screenshot](Mockups/notifications.png)
 
 The notification system provides:
 - Real-time alerts for low stock
@@ -290,13 +284,13 @@ The notification system provides:
 A-1 Launchpad is designed to work seamlessly across all devices:
 
 ### Desktop View
-![Desktop Screenshot](https://i.imgur.com/example5.png)
+![Desktop Screenshot](Mockups/desktopview.png)
 
 ### Tablet View
-![Tablet Screenshot](https://i.imgur.com/example6.png)
+![Tablet Screenshot](Mockups/tabletview.png)
 
 ### Mobile View
-![Mobile Screenshot](https://i.imgur.com/example7.png)
+![Mobile Screenshot](Mockups/mobileview.png)
 
 The application features:
 - Responsive layouts that adapt to screen size
@@ -330,4 +324,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-© 2025 A-1 Launchpad Team. All rights reserved.
+© 2025 Harshit Patle. All rights reserved.

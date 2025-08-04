@@ -20,7 +20,7 @@ const Footer = ({ variant }) => {
                             <Heart className="w-4 h-4 text-red-500" />
                             <span className="text-sm">by Harshit Patle</span>
                         </div>
-                        <p className="text-sm text-gray-400">© {new Date().getFullYear()} All rights reserved</p>
+                        <p className="text-sm text-gray-400">© {new Date().getFullYear()} All rights reserved to Harshit Patle</p>
                     </div>
 
                     {/* Social links - show all icons on all pages */}
