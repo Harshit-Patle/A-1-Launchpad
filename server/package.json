@@ -15,8 +15,8 @@
     "express",
     "mongodb"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Harshit Patle",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
