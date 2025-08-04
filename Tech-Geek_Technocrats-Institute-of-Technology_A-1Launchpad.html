@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-1 Launchpad: Laboratory Inventory Management System - Architecture & Design Document</title>
+    <style>
+        @page {
+            size: letter;
+            margin: 0.3cm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.3;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.2in;
+            background: white;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header h2 {
+            margin: 3px 0 0 0;
+            color: #34495e;
+            font-size: 20px;
+            font-weight: normal;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 1px solid #3498db;
+            padding-bottom: 3px;
+            margin: 10px 0 6px 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        h3 {
+            color: #34495e;
+            margin: 6px 0 3px 0;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .architecture-diagram {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 4px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.1;
+            margin: 4px 0;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        .schema-diagram {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 3px;
+            font-family: 'Courier New', Consolas, monospace;
+            font-size: 12px;
+            line-height: 1;
+            margin: 4px 0;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .endpoint-group {
+            background-color: #e3f2fd;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        p {
+            margin: 5px 0;
+            text-align: justify;
+            font-size: 13px;
+        }
+
+        ul,
+        ol {
+            margin: 5px 0;
+            padding-left: 15px;
+            font-size: 13px;
+        }
+
+        li {
+            margin: 2px 0;
+            font-size: 13px;
+        }
+
+        .two-column {
+            display: flex;
+            gap: 8px;
+            margin: 5px 0;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 3px solid #ffc107;
+            padding: 5px;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .force-page-break {
+            page-break-before: always !important;
+        }
+
+        .no-page-break {
+            page-break-inside: avoid !important;
+        }
+
+        .compact-list {
+            margin: 3px 0;
+            padding-left: 10px;
+            font-size: 14px;
+        }
+
+        .compact-list li {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        @media print {
+            body {
+                font-size: 14px;
+                padding: 0.15in;
+                margin: 0;
+            }
+
+            /* Force page breaks at specific sections */
+            h2:nth-of-type(3) {
+                /* API Endpoints section */
+                page-break-before: always;
+            }
+
+            h2:nth-of-type(5) {
+                /* Scalability section */
+                page-break-before: always;
+            }
+
+            /* Prevent page breaks inside certain elements */
+            table,
+            .highlight-box,
+            .two-column {
+                page-break-inside: avoid;
+            }
+
+            .architecture-diagram {
+                font-size: 12px;
+                max-height: 2.8in;
+            }
+
+            .schema-diagram {
+                font-size: 11px;
+                max-height: 2.6in;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            /* Size control for each page */
+            .header,
+            h2:nth-of-type(1),
+            h2:nth-of-type(2),
+            .architecture-diagram,
+            .schema-diagram,
+            .highlight-box:first-of-type {
+                max-height: 9.5in;
+                /* Page 1 content */
+            }
+
+            h2:nth-of-type(3),
+            h2:nth-of-type(4),
+            table,
+            .two-column:first-of-type {
+                max-height: 9.5in;
+                /* Page 2 content */
+            }
+
+            h2:nth-of-type(5),
+            .two-column:last-of-type,
+            .highlight-box:nth-of-type(2),
+            .highlight-box:last-of-type {
+                max-height: 9.5in;
+                /* Page 3 content */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PAGE 1 -->
+    <div class="header">
+        <h1>A-1 Launchpad: Laboratory Inventory Management System</h1>
+        <h2>Architecture & Design Document <span style="font-size:medium; font-weight: bolder;">By Team: Tech Geek</span></h2>
+        <p style="margin: 4px 0 0 0; font-size: 18px; color: #666;">
+            <strong>GitHub:</strong> <a href="https://github.com/Harshit-Patle/A-1-Launchpad"
+                style="color: #3498db; text-decoration: none;">github.com/Harshit-Patle/A-1-Launchpad</a>
+        </p>
+    </div>
+
+    <h2>1. High-Level Architecture Diagram</h2>
+
+    <div class="architecture-diagram">
+        <img src="architecture-diagram.png" alt="High-Level Architecture Diagram" width="100%" height="100%">
+    </div>
+
+    <p><strong>Architecture:</strong> Three-tier with React.js frontend (using Vite and Tailwind CSS),
+        Node.js/Express backend with 12 specialized controllers, and MongoDB database with 7 data models. Features
+        AuthContext and ComponentsContext for state management, comprehensive middleware for authentication, role
+        validation,
+        and file uploads, with specialized components for barcode scanning, QR code generation, and advanced reporting.
+    </p>
+
+    <h2>2. Database Schema Diagram</h2>
+
+    <div class="schema-diagram">
+        <img src="database-schema.png" alt="Database Schema Diagram" width="100%" height="100%">
+    </div>
+
+    <div class="highlight-box">
+        <strong>Key Relationships:</strong> Users (1:many) → Components, Logs, Reservations, Maintenance, WasteEntry.
+        Components (1:many) → Logs, Reservations, Maintenance, WasteEntry. All activities tracked via Log collection for
+        auditing.
+    </div>
+    
+    <!-- PAGE 2 -->
+    <h2>3. API Endpoints</h2>
+
+    <table style="font-size: 14px;">
+        <thead>
+            <tr>
+                <th width="35%">Endpoint</th>
+                <th width="10%">Method</th>
+                <th width="55%">Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="endpoint-group">
+                <td colspan="3">Authentication</td>
+            </tr>
+            <tr>
+                <td>/api/auth/login</td>
+                <td>POST</td>
+                <td>User authentication & JWT provision</td>
+            </tr>
+            <tr>
+                <td>/api/auth/me</td>
+                <td>GET</td>
+                <td>Current user information</td>
+            </tr>
+            <tr>
+                <td>/api/auth/register</td>
+                <td>POST</td>
+                <td>New user registration (admin only)</td>
+            </tr>
+            <tr class="endpoint-group">
+                <td colspan="3">Component Management</td>
+            </tr>
+            <tr>
+                <td>/api/components</td>
+                <td>GET</td>
+                <td>List components (filtering/sorting/paging)</td>
+            </tr>
+            <tr>
+                <td>/api/components</td>
+                <td>POST</td>
+                <td>Add new component</td>
+            </tr>
+            <tr>
+                <td>/api/components/:id</td>
+                <td>GET/PUT/DELETE</td>
+                <td>Get/Update/Delete specific component</td>
+            </tr>
+            <tr>
+                <td>/api/components/categories</td>
+                <td>GET</td>
+                <td>Get all component categories</td>
+            </tr>
+            <tr>
+                <td>/api/components/low-stock</td>
+                <td>GET</td>
+                <td>Components below critical threshold</td>
+            </tr>
+            <tr class="endpoint-group">
+                <td colspan="3">User Management</td>
+            </tr>
+            <tr>
+                <td>/api/users</td>
+                <td>GET</td>
+                <td>List all users (admin only)</td>
+            </tr>
+            <tr>
+                <td>/api/users/:id</td>
+                <td>GET/PUT</td>
+                <td>Get/Update user details</td>
+            </tr>
+            <tr>
+                <td>/api/users/:id/role</td>
+                <td>PUT</td>
+                <td>Update user role (admin only)</td>
+            </tr>
+            <tr class="endpoint-group">
+                <td colspan="3">Operations</td>
+            </tr>
+            <tr>
+                <td>/api/logs</td>
+                <td>GET</td>
+                <td>Activity logs with filtering</td>
+            </tr>
+            <tr>
+                <td>/api/reservations</td>
+                <td>GET/POST</td>
+                <td>List/Create component reservations</td>
+            </tr>
+            <tr>
+                <td>/api/reservations/:id</td>
+                <td>PUT</td>
+                <td>Update reservation status</td>
+            </tr>
+            <tr>
+                <td>/api/maintenance</td>
+                <td>GET/POST</td>
+                <td>List/Add maintenance records</td>
+            </tr>
+            <tr>
+                <td>/api/reports/inventory-overview</td>
+                <td>GET</td>
+                <td>Inventory status summary</td>
+            </tr>
+            <tr>
+                <td>/api/reports/:type/export</td>
+                <td>GET</td>
+                <td>Export reports (PDF/Excel)</td>
+            </tr>
+            <tr>
+                <td>/api/waste</td>
+                <td>GET/POST</td>
+                <td>List/Record component disposal</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Technology Justification</h2>
+
+    <div class="two-column">
+        <div class="column">
+            <h3>Frontend Stack</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>React.js:</strong> Component-based architecture promotes code
+                    reusability and
+                    maintainable structure</li>
+                <li style="font-size: 14px;"><strong>Vite:</strong> Superior development experience with hot module
+                    replacement and fast
+                    builds</li>
+                <li style="font-size: 14px;"><strong>Tailwind CSS:</strong> Rapid UI development with utility classes
+                    and responsive design
+                </li>
+                <li style="font-size: 14px;"><strong>Context API:</strong> Implemented AuthContext and ComponentsContext
+                    for state management
+                </li>
+            </ul>
+
+            <h3>Backend Stack</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Node.js/Express:</strong> Structured with 12 dedicated controllers
+                    including
+                    component, authentication, dashboard, approval workflow, and more</li>
+                <li style="font-size: 14px;"><strong>JWT Authentication:</strong> Implemented using authMiddleware with
+                    role-based access control via roleMiddleware
+                </li>
+                <li style="font-size: 14px;"><strong>Middleware Pattern:</strong> Includes authentication, role
+                    validation,
+                    file upload handling, and input validation middleware
+                </li>
+            </ul>
+        </div>
+
+        <div class="column">
+            <h3>Database Stack</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>MongoDB:</strong> Flexible schema design for User, Component, Log,
+                    Maintenance, Notification, Reservation, and WasteEntry models without requiring migrations</li>
+                <li style="font-size: 14px;"><strong>Mongoose ODM:</strong> Schema validation, type casting, and
+                    business logic hooks for proper data management with MongoDB</li>
+            </ul>
+
+            <h3>Architecture Benefits</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Full-Stack JavaScript:</strong> Unified development experience with
+                    React frontend and Node.js backend</li>
+                <li style="font-size: 14px;"><strong>Modern Tech Stack:</strong> Vite build system with Tailwind CSS for
+                    responsive design across desktop, tablet, and mobile views</li>
+                <li style="font-size: 14px;"><strong>Feature-Rich Design:</strong> Includes barcode scanning, QR code
+                    generation,
+                    advanced reporting, notifications, and approval workflows</li>
+                <li style="font-size: 14px;"><strong>Specialized Components:</strong> Custom components for inventory
+                    management,
+                    waste tracking, maintenance scheduling, and reservations</li>
+            </ul>
+        </div>
+    </div>
+    </div>
+
+    <!-- PAGE 3 -->
+    <h2>5. Scalability & Maintainability</h2>
+
+    <div class="two-column">
+        <div class="column">
+            <h3>Scalability Considerations</h3>
+            <ol class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Component Architecture:</strong> Well-structured component
+                    hierarchy with
+                    specialized components like BarcodeScanner, NotificationCenter, and QRCodeGenerator</li>
+                <li style="font-size: 14px;"><strong>Database Modeling:</strong> Comprehensive data models including
+                    Component, User, ApprovalWorkflow, Log, Maintenance, Notification, Reservation, and WasteEntry</li>
+                <li style="font-size: 14px;"><strong>Controller Organization:</strong> Specialized controllers for each
+                    major
+                    system function (12 total) including approval, component, dashboard, and report exports</li>
+                <li style="font-size: 14px;"><strong>Route Management:</strong> Dedicated route files for each
+                    functional area
+                    with proper middleware application</li>
+                <li style="font-size: 14px;"><strong>Scheduled Processing:</strong> Background tasks managed through
+                    scheduledTasks utility for regular system maintenance</li>
+                <li style="font-size: 14px;"><strong>Protected Routes:</strong> Authentication-secured routes with
+                    ProtectedRoute component and role-based access control</li>
+            </ol>
+
+            <h3>Performance Optimization</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Database Queries:</strong> Efficient MongoDB queries with dedicated
+                    controller methods for specialized data access</li>
+                <li style="font-size: 14px;"><strong>API Response:</strong> Structured API endpoints with proper error
+                    handling
+                    and consistent response formats</li>
+                <li style="font-size: 14px;"><strong>Frontend:</strong> Responsive tables using custom
+                    useResponsiveTables hook
+                    with adaptive UI components for all device sizes</li>
+                <li style="font-size: 14px;"><strong>Monitoring:</strong> Comprehensive logging system using winston
+                    logger
+                    with detailed activity tracking</li>
+            </ul>
+        </div>
+
+        <div class="column">
+            <h3>Maintainability Approaches</h3>
+            <ol class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Modular Architecture:</strong> Organized project with separate
+                    client and server
+                    directories, each with clear component/controller separation</li>
+                <li style="font-size: 14px;"><strong>Context-based State:</strong> Centralized state management using
+                    AuthContext
+                    and ComponentsContext for consistent data flow</li>
+                <li style="font-size: 14px;"><strong>Input Validation:</strong> Dedicated validation middleware for
+                    ensuring
+                    data integrity before processing</li>
+                <li style="font-size: 14px;"><strong>Responsive Design:</strong> Custom useResponsiveTables hook
+                    enabling
+                    consistent user experience across device sizes</li>
+                <li style="font-size: 14px;"><strong>Advanced Features:</strong> Specialized components for advanced
+                    search, barcode scanning, and QR code generation</li>
+                <li style="font-size: 14px;"><strong>Data Management:</strong> Comprehensive controllers for approvals,
+                    components, logs, maintenance, notifications, and more</li>
+                <li style="font-size: 14px;"><strong>Security:</strong> JWT-based authentication with role-based
+                    middleware for controlled access</li>
+            </ol>
+
+            <h3>Development Practices</h3>
+            <ul class="compact-list" style="font-size: 14px;">
+                <li style="font-size: 14px;"><strong>Version Control:</strong> Git repository hosted on GitHub with
+                    proper
+                    project structure and documentation</li>
+                <li style="font-size: 14px;"><strong>Frontend Tooling:</strong> Vite build system with ESLint
+                    configuration
+                    and PostCSS/Tailwind integration</li>
+                <li style="font-size: 14px;"><strong>Logging:</strong> Comprehensive logging system using custom logger
+                    utility with dedicated log storage</li>
+                <li style="font-size: 14px;"><strong>Security:</strong> Authentication middleware with JWT token
+                    verification
+                    and role-based access control</li>
+                <li style="font-size: 14px;"><strong>File Management:</strong> Upload middleware for handling file
+                    uploads
+                    with component documentation</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="highlight-box" style="font-size: 14px;">
+        <h3>Future Expansion Capabilities</h3>
+        <p style="font-size: 14px;">The modular architecture supports seamless integration of advanced features:</p>
+        <ul class="compact-list" style="font-size: 14px;">
+            <li style="font-size: 14px;"><strong>Advanced Barcode/QR Integration:</strong> Enhanced BarcodeScanner and
+                QRCodeGenerator
+                components with inventory automation</li>
+            <li style="font-size: 14px;"><strong>Supplier Management:</strong> Extending component model relationships
+                with
+                supplier tracking and automated reordering</li>
+            <li style="font-size: 14px;"><strong>Enhanced Approval Workflows:</strong> Multi-stage approval processes
+                for sensitive
+                component transactions</li>
+            <li style="font-size: 14px;"><strong>Mobile Applications:</strong> Progressive Web App implementation for
+                mobile access</li>
+            <li style="font-size: 14px;"><strong>Advanced Import/Export:</strong> Enhanced data transfer capabilities
+                via the
+                ImportExport component</li>
+            <li style="font-size: 14px;"><strong>Predictive Analytics:</strong> Inventory forecasting based on
+                historical usage patterns
+            </li>
+            <li style="font-size: 14px;"><strong>Enhanced Dashboard:</strong> Further expansion of the EnhancedDashboard
+                with customizable
+                widgets and alerts</li>
+        </ul>
+    </div>
+
+    <div class="highlight-box" style="font-size: 14px;">
+        <h3>Deployment Architecture</h3>
+        <p style="font-size: 14px;"><strong>Production Setup:</strong> Separate client and server deployments with
+            Vite-optimized frontend build, MongoDB database configured via db.js, with authentication secured through
+            JWT tokens generated via generateToken utility. The system uses scheduled tasks for regular maintenance
+            operations and includes comprehensive error logging via the custom logger utility.</p>
+    </div>
+</body>
+
+</html>
