@@ -182,6 +182,10 @@ npm run dev
 
 Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
 
+7. **For `.env` file**
+
+Contact me 📧
+
 ### Production Deployment
 
 1. **Build the frontend**
