@@ -4,9 +4,9 @@
 
 ## Project Overview
 
-A-1 Launchpad LIMS (Laboratory Inventory Management System) is a comprehensive web application designed specifically for electronics R&D and manufacturing labs to efficiently manage their component inventory. The system addresses the challenges of tracking a vast array of electronic components, from passive elements to complex integrated circuits, providing real-time insights, automated notifications, and comprehensive reporting.
+A-1 Launchpad LIMS (Laboratory Inventory Management System) is a full-stack, responsive web application engineered for electronics R&D and manufacturing laboratories to manage and optimize their electronic component inventory. The system addresses complexities involved in tracking high-density component inventories—ranging from passive devices to advanced integrated circuits—by providing real-time visibility, rule-based notifications, and audit-compliant reporting.
 
-This full-stack responsive application offers intuitive component management, stock movement tracking, powerful search functionality, role-based access control, and an insightful dashboard to help labs maintain optimal inventory levels and prevent project delays due to stockouts or obsolete components.
+Built with scalable architecture and modular design principles, the platform supports structured component classification, transactional stock movement tracking, parametric search capabilities, and role-based access control (RBAC). A centralized dashboard delivers actionable insights into inventory health, usage patterns, and critical shortages—enabling labs to maintain operational efficiency, reduce project risk due to stockouts or obsolete parts, and support lean inventory practices.
 
 
 ## Table of Contents
