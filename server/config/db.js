@@ -20,13 +20,17 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 30000,
             socketTimeoutMS: 60000,
             connectTimeoutMS: 30000,
-            maxPoolSize: 20,
+            maxPoolSize: 100,                    // Increased significantly for concurrent ops
+            minPoolSize: 20,                     // Keep more warm connections
+            maxIdleTimeMS: 120000,               // Keep idle connections longer
+            waitQueueTimeoutMS: 30000,           // Wait up to 30s for a connection
+            heartbeatFrequencyMS: 10000,
             retryWrites: true,
-            retryAttempts: 5,
+            family: 4,                           // IPv4 only (faster DNS)
         });
 
         isConnected = true;
-        console.log('✅ MongoDB connected successfully');
+        console.log('✅ MongoDB connected successfully - Pool: 20-100 connections');
     } catch (err) {
         console.error('❌ MongoDB connection error:', err.message);
         console.error('⚠️  Make sure:');
