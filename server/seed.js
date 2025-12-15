@@ -73,8 +73,8 @@ const seedData = async () => {
         // Create regular user/technician (according to README)
         const regularUser = new User({
             name: 'Lab Technician',
-            email: 'user@example.com',
-            password: 'user123',
+            email: 'technician@lims.com',
+            password: 'technician123',
             role: 'Technician',
             employeeId: 'TECH001',
             department: 'Laboratory',
@@ -95,7 +95,7 @@ const seedData = async () => {
         });
 
         await regularUser.save();
-        console.log('User account created: user@example.com / user123');
+        console.log('User account created: technician@lims.com / technician123');
 
         // Check if components exist, only create if none exist
         const componentCount = await Component.countDocuments();
@@ -532,7 +532,7 @@ const seedData = async () => {
         console.log('\n📧 Login credentials (from README.md):');
         console.log('Admin: admin@lims.com / admin123');
         console.log('Manager: manager@lims.com / manager123');
-        console.log('User: user@example.com / user123');
+        console.log('User: technician@lims.com / technician123');
 
         process.exit(0);
     } catch (error) {
