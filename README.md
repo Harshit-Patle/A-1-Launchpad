@@ -221,7 +221,7 @@ The application supports three user roles, each with different permissions:
 - Can access all reports and dashboards
 - Can approve workflows and manage components
 
-**Test credentials**: admin@example.com / admin123
+**Test credentials**: admin@lims.com / admin123
 
 ### Manager
 
@@ -230,7 +230,7 @@ The application supports three user roles, each with different permissions:
 - Can manage component information
 - Cannot manage users or system settings
 
-**Test credentials**: manager@example.com / manager123
+**Test credentials**: manager@lims.com / manager123
 
 ### User (Lab Technician)
 
@@ -239,7 +239,7 @@ The application supports three user roles, each with different permissions:
 - Can view limited reports
 - Cannot edit component information or access admin features
 
-**Test credentials**: user@example.com / user123
+**Test credentials**: technician@lims.com / technician123
 
 ## Key Functionality
 

@@ -19,7 +19,7 @@ const seedData = async () => {
         // Create admin user (according to README)
         const adminUser = new User({
             name: 'Administrator',
-            email: 'admin@example.com',
+            email: 'admin@lims.com',
             password: 'admin123',
             role: 'Admin',
             employeeId: 'ADM001',
@@ -41,12 +41,12 @@ const seedData = async () => {
         });
 
         await adminUser.save();
-        console.log('Admin user created: admin@example.com / admin123');
+        console.log('Admin user created: admin@lims.com / admin123');
 
         // Create manager user (according to README)
         const managerUser = new User({
             name: 'Lab Manager',
-            email: 'manager@example.com',
+            email: 'manager@lims.com',
             password: 'manager123',
             role: 'Manager',
             employeeId: 'MGR001',
@@ -68,7 +68,7 @@ const seedData = async () => {
         });
 
         await managerUser.save();
-        console.log('Manager user created: manager@example.com / manager123');
+        console.log('Manager user created: manager@lims.com / manager123');
 
         // Create regular user/technician (according to README)
         const regularUser = new User({
@@ -530,8 +530,8 @@ const seedData = async () => {
 
         console.log('\n🎉 Seed data created successfully!');
         console.log('\n📧 Login credentials (from README.md):');
-        console.log('Admin: admin@example.com / admin123');
-        console.log('Manager: manager@example.com / manager123');
+        console.log('Admin: admin@lims.com / admin123');
+        console.log('Manager: manager@lims.com / manager123');
         console.log('User: user@example.com / user123');
 
         process.exit(0);
