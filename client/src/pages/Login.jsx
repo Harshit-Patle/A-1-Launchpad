@@ -131,7 +131,7 @@ export default function Login() {
                         </div>
                     </div>
                 </form>
-                <Footer variant="login" />
+                {/* <Footer variant="login" /> */}
             </div>
         </div>
     );
