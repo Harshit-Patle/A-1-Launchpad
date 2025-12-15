@@ -3,8 +3,11 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from .env file (local development only)
+// On Vercel, variables are injected via environment configuration
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
 
 const app = express();
 
@@ -102,21 +105,36 @@ connectDB();
 // Handle OPTIONS preflight requests
 app.options('*', cors(corsOptions));
 
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: 'A-1 Launchpad API Server',
+        status: 'running',
+        version: '1.0.0',
+        endpoints: '/api/*'
+    });
+});
+
 // Routes (incrementally add them back)
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/components', require('./routes/componentRoutes'));
-app.use('/api/logs', require('./routes/logRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/import-export', require('./routes/importExportRoutes'));
-app.use('/api/reservations', require('./routes/reservationRoutes'));
-app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
-app.use('/api/reports', require('./routes/reportRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-app.use('/api/approvals', require('./routes/approvalRoutes'));
-// Now using the fixed componentSettings route
-app.use('/api/component-settings', require('./routes/componentSettings'));
-app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-app.use('/api/waste', require('./routes/wasteRoutes'));
+try {
+    app.use('/api/auth', require('./routes/authRoutes'));
+    app.use('/api/components', require('./routes/componentRoutes'));
+    app.use('/api/logs', require('./routes/logRoutes'));
+    app.use('/api/users', require('./routes/userRoutes'));
+    app.use('/api/import-export', require('./routes/importExportRoutes'));
+    app.use('/api/reservations', require('./routes/reservationRoutes'));
+    app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
+    app.use('/api/reports', require('./routes/reportRoutes'));
+    app.use('/api/notifications', require('./routes/notificationRoutes'));
+    app.use('/api/approvals', require('./routes/approvalRoutes'));
+    // Now using the fixed componentSettings route
+    app.use('/api/component-settings', require('./routes/componentSettings'));
+    app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+    app.use('/api/waste', require('./routes/wasteRoutes'));
+    console.log('✅ All routes loaded successfully');
+} catch (err) {
+    console.error('❌ Error loading routes:', err.message);
+}
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
