@@ -74,7 +74,8 @@ export default function Users() {
     };
 
     const handleDelete = async (userId) => {
-        if (userId === user._id) {
+        const currentUserId = user?._id || user?.id;
+        if (userId === currentUserId) {
             toast.error('You cannot delete your own account');
             return;
         }
@@ -270,7 +271,7 @@ export default function Users() {
                                                 <div className="ml-4">
                                                     <div className="text-sm font-medium text-gray-900">
                                                         {userItem.name}
-                                                        {userItem._id === user._id && (
+                                                        {userItem._id === (user?._id || user?.id) && (
                                                             <span className="ml-2 text-xs text-blue-600">(You)</span>
                                                         )}
                                                     </div>
@@ -304,7 +305,7 @@ export default function Users() {
                                                 >
                                                     Edit
                                                 </button>
-                                                {userItem._id !== user._id && (
+                                                {userItem._id !== (user?._id || user?.id) && (
                                                     <button
                                                         onClick={() => handleDelete(userItem._id)}
                                                         className="text-red-600 hover:text-red-900"

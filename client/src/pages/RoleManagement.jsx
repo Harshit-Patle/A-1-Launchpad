@@ -29,7 +29,7 @@ export default function RoleManagement() {
     ];
 
     useEffect(() => {
-        if (user.role === 'Admin') {
+        if (user?.role === 'Admin') {
             fetchUsers();
         }
     }, [user]);
@@ -143,7 +143,7 @@ export default function RoleManagement() {
         }
     };
 
-    if (user.role !== 'Admin') {
+    if (user?.role !== 'Admin') {
         return (
             <div className="text-center py-8">
                 <div className="text-red-600 text-lg font-semibold">Access Denied</div>

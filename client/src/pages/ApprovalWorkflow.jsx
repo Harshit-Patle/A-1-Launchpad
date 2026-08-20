@@ -14,10 +14,10 @@ export default function ApprovalWorkflow() {
 
     useEffect(() => {
         fetchPendingApprovals();
-        if (user.role === 'Admin' || user.role === 'Manager') {
+        if (user?.role === 'Admin' || user?.role === 'Manager') {
             fetchAllApprovals();
         }
-    }, []);
+    }, [user]);
 
     const fetchPendingApprovals = async () => {
         try {
@@ -68,7 +68,7 @@ export default function ApprovalWorkflow() {
                 setShowModal(false);
                 setComment('');
                 fetchPendingApprovals();
-                if (user.role === 'Admin' || user.role === 'Manager') {
+                if (user?.role === 'Admin' || user?.role === 'Manager') {
                     fetchAllApprovals();
                 }
             } else {
@@ -250,7 +250,7 @@ export default function ApprovalWorkflow() {
                     </div>
                 </div>
 
-                {(user.role === 'Admin' || user.role === 'Manager') && (
+                {(user?.role === 'Admin' || user?.role === 'Manager') && (
                     <>
                         <div className="bg-white rounded-lg shadow p-6">
                             <div className="flex items-center">
@@ -300,7 +300,7 @@ export default function ApprovalWorkflow() {
                         >
                             Pending Approvals ({pendingApprovals.length})
                         </button>
-                        {(user.role === 'Admin' || user.role === 'Manager') && (
+                        {(user?.role === 'Admin' || user?.role === 'Manager') && (
                             <button
                                 onClick={() => setActiveTab('all')}
                                 className={`py-4 px-6 border-b-2 font-medium text-sm ${activeTab === 'all'
