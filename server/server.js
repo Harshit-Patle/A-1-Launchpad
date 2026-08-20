@@ -37,7 +37,7 @@ const corsOptions = {
         let allowedOrigins = [
             'http://localhost:3000',   // React dev server 
             'http://localhost:5173',   // Vite dev server
-            'http://localhost:5002',   // Direct access to API
+            'http://localhost:5000',   // Direct access to API
             'https://lims-a-1-launchpad.vercel.app', // Production frontend
             process.env.CLIENT_URL     // From .env file
         ];
@@ -169,7 +169,7 @@ module.exports = app;
 
 // For local development
 if (require.main === module) {
-    const PORT = process.env.PORT || 5002;
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
     });
