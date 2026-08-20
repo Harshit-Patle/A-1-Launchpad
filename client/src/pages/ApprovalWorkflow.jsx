@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { approvalsAPI } from '../services/api';
 
 export default function ApprovalWorkflow() {
     const { user } = useAuth();
@@ -21,15 +22,8 @@ export default function ApprovalWorkflow() {
 
     const fetchPendingApprovals = async () => {
         try {
-            const response = await fetch('/api/approvals/pending', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setPendingApprovals(data.approvals || []);
-            }
+            const response = await approvalsAPI.getPending();
+            setPendingApprovals(response.data?.approvals || []);
         } catch (error) {
             console.error('Failed to fetch pending approvals:', error);
         }
@@ -37,15 +31,8 @@ export default function ApprovalWorkflow() {
 
     const fetchAllApprovals = async () => {
         try {
-            const response = await fetch('/api/approvals', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setAllApprovals(data.approvals || []);
-            }
+            const response = await approvalsAPI.getAll();
+            setAllApprovals(response.data?.approvals || []);
         } catch (error) {
             console.error('Failed to fetch all approvals:', error);
         }
@@ -54,29 +41,17 @@ export default function ApprovalWorkflow() {
     const handleApprovalAction = async (approvalId, status) => {
         setLoading(true);
         try {
-            const response = await fetch(`/api/approvals/${approvalId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ status, comment })
-            });
-
-            if (response.ok) {
-                toast.success(`Request ${status} successfully!`);
-                setShowModal(false);
-                setComment('');
-                fetchPendingApprovals();
-                if (user?.role === 'Admin' || user?.role === 'Manager') {
-                    fetchAllApprovals();
-                }
-            } else {
-                const error = await response.json();
-                toast.error(error.msg || 'Failed to update approval');
+            await approvalsAPI.updateStatus(approvalId, { status, comment });
+            toast.success(`Request ${status} successfully!`);
+            setShowModal(false);
+            setComment('');
+            fetchPendingApprovals();
+            if (user?.role === 'Admin' || user?.role === 'Manager') {
+                fetchAllApprovals();
             }
         } catch (error) {
-            toast.error('Failed to update approval');
+            console.error('Failed to update approval:', error);
+            toast.error(error.response?.data?.msg || 'Failed to update approval');
         } finally {
             setLoading(false);
         }

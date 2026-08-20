@@ -192,17 +192,17 @@ export const wasteAPI = {
     getStatistics: () => api.get('/waste/statistics/summary'),
 };
 
+// Approvals API calls
+export const approvalsAPI = {
+    getAll: (params) => api.get('/approvals', { params }),
+    getPending: (params) => api.get('/approvals/pending', { params }),
+    getById: (id) => api.get(`/approvals/${id}`),
+    updateStatus: (id, data) => api.patch(`/approvals/${id}/status`, data),
+};
+
 // Health check
 export const healthAPI = {
     check: () => api.get('/health'),
-};
-
-// System Settings API calls
-export const settingsAPI = {
-    getAll: () => api.get('/settings'),
-    update: (section, data) => api.put(`/settings/${section}`, data),
-    reset: () => api.post('/settings/reset'),
-    getDefaults: () => api.get('/settings/defaults'),
 };
 
 export default api;

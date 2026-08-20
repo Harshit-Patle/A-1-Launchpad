@@ -191,19 +191,19 @@ export default function WasteTracking() {
     const handleEdit = (entry) => {
         setSelectedEntry(entry);
         setFormData({
-            componentId: entry.componentId,
-            componentName: entry.componentName,
-            quantity: entry.quantity,
-            unit: entry.unit,
-            wasteType: entry.wasteType,
-            hazardLevel: entry.hazardLevel,
-            disposalMethod: entry.disposalMethod,
-            disposalDate: entry.disposalDate,
-            disposedBy: entry.disposedBy,
-            containerCode: entry.containerCode,
-            notes: entry.notes,
-            isCompliant: entry.isCompliant,
-            attachments: entry.attachments
+            componentId: getComponentIdStr(entry.componentId),
+            componentName: entry.componentName || '',
+            quantity: entry.quantity || '',
+            unit: entry.unit || 'g',
+            wasteType: entry.wasteType || '',
+            hazardLevel: entry.hazardLevel || 'low',
+            disposalMethod: entry.disposalMethod || '',
+            disposalDate: entry.disposalDate ? new Date(entry.disposalDate).toISOString().split('T')[0] : '',
+            disposedBy: getDisposerName(entry.disposedBy),
+            containerCode: entry.containerCode || '',
+            notes: entry.notes || '',
+            isCompliant: entry.isCompliant !== undefined ? entry.isCompliant : true,
+            attachments: entry.attachments || []
         });
         setFormType('edit');
         setShowForm(true);
@@ -219,41 +219,42 @@ export default function WasteTracking() {
 
         try {
             if (formType === 'add') {
-                // Simulate adding a new waste entry
-                const newEntry = {
-                    id: wasteEntries.length + 1,
-                    ...formData
+                const payload = {
+                    ...formData,
+                    quantity: Number(formData.quantity),
+                    componentId: formData.componentId || undefined
                 };
-
-                setWasteEntries(prev => [...prev, newEntry]);
+                await wasteAPI.create(payload);
                 toast.success('Waste entry added successfully!');
+                fetchWasteEntries();
             } else {
-                // Simulate updating a waste entry
-                const updatedEntries = wasteEntries.map(entry =>
-                    entry.id === selectedEntry.id ? { ...entry, ...formData } : entry
-                );
-
-                setWasteEntries(updatedEntries);
+                const targetId = selectedEntry?._id || selectedEntry?.id;
+                if (targetId && !String(targetId).startsWith('local_')) {
+                    await wasteAPI.update(targetId, formData);
+                }
                 toast.success('Waste entry updated successfully!');
+                fetchWasteEntries();
             }
 
             setShowForm(false);
         } catch (error) {
             console.error('Error saving waste entry:', error);
-            toast.error('Failed to save waste entry');
+            toast.error(error.response?.data?.msg || 'Failed to save waste entry');
         }
     };
 
     const handleDelete = async (entry) => {
         if (window.confirm(`Are you sure you want to delete this waste entry for ${entry.componentName}?`)) {
             try {
-                // Simulate deleting a waste entry
-                const filteredEntries = wasteEntries.filter(e => e.id !== entry.id);
-                setWasteEntries(filteredEntries);
+                const targetId = entry._id || entry.id;
+                if (targetId && !String(targetId).startsWith('local_')) {
+                    await wasteAPI.delete(targetId);
+                }
                 toast.success('Waste entry deleted successfully!');
+                fetchWasteEntries();
             } catch (error) {
                 console.error('Error deleting waste entry:', error);
-                toast.error('Failed to delete waste entry');
+                toast.error(error.response?.data?.msg || 'Failed to delete waste entry');
             }
         }
     };
@@ -281,14 +282,28 @@ export default function WasteTracking() {
         }
     };
 
+    const getDisposerName = (disposedBy) => {
+        if (!disposedBy) return 'Unknown';
+        if (typeof disposedBy === 'object') return disposedBy.name || disposedBy.email || 'Unknown';
+        return String(disposedBy);
+    };
+
+    const getComponentIdStr = (componentId) => {
+        if (!componentId) return '';
+        if (typeof componentId === 'object') return componentId.partNumber || componentId.name || componentId._id || '';
+        return String(componentId);
+    };
+
     // Apply filters
     const filteredEntries = wasteEntries
-        .filter(entry =>
-        (filters.search === '' ||
-            entry.componentName.toLowerCase().includes(filters.search.toLowerCase()) ||
-            entry.containerCode.toLowerCase().includes(filters.search.toLowerCase()) ||
-            entry.disposedBy.toLowerCase().includes(filters.search.toLowerCase()))
-        )
+        .filter(entry => {
+            if (!filters.search) return true;
+            const searchLower = filters.search.toLowerCase();
+            const compName = (entry.componentName || '').toLowerCase();
+            const container = (entry.containerCode || '').toLowerCase();
+            const disposer = getDisposerName(entry.disposedBy).toLowerCase();
+            return compName.includes(searchLower) || container.includes(searchLower) || disposer.includes(searchLower);
+        })
         .filter(entry => filters.wasteType === '' || entry.wasteType === filters.wasteType)
         .filter(entry => filters.disposalMethod === '' || entry.disposalMethod === filters.disposalMethod)
         .filter(entry => !filters.startDate || new Date(entry.disposalDate) >= new Date(filters.startDate))
@@ -659,13 +674,15 @@ export default function WasteTracking() {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredEntries.length > 0 ? (
-                                    filteredEntries.map((entry) => (
-                                        <tr key={entry.id} className="hover:bg-gray-50">
+                                    filteredEntries.map((entry, index) => (
+                                        <tr key={entry._id || entry.id || index} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div>
                                                         <div className="text-sm font-medium text-gray-900">{entry.componentName}</div>
-                                                        <div className="text-xs text-gray-500">ID: {entry.componentId}</div>
+                                                        {entry.componentId && (
+                                                            <div className="text-xs text-gray-500">ID: {getComponentIdStr(entry.componentId)}</div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
@@ -678,7 +695,7 @@ export default function WasteTracking() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900">{entry.disposalMethod}</div>
                                                 <div className="text-xs text-gray-500">
-                                                    {new Date(entry.disposalDate).toLocaleDateString()} by {entry.disposedBy}
+                                                    {entry.disposalDate ? new Date(entry.disposalDate).toLocaleDateString() : 'N/A'} by {getDisposerName(entry.disposedBy)}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
