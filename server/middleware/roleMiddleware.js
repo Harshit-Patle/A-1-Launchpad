@@ -6,10 +6,12 @@ const roleMiddleware = (roles) => {
                 return res.status(401).json({ msg: 'Authentication required' });
             }
 
-            // Check if user role is in allowed roles
+            // Check if user role is in allowed roles (case-insensitive)
             const allowedRoles = Array.isArray(roles) ? roles : [roles];
+            const normalizedAllowed = allowedRoles.map(r => String(r).toLowerCase());
+            const userRole = String(req.user.role || '').toLowerCase();
 
-            if (!allowedRoles.includes(req.user.role)) {
+            if (!normalizedAllowed.includes(userRole)) {
                 return res.status(403).json({
                     msg: 'Access denied. Insufficient permissions.',
                     requiredRoles: allowedRoles,

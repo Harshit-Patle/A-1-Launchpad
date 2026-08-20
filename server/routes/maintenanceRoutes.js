@@ -27,21 +27,21 @@ router.get('/stats', getMaintenanceStats);
 // @route   POST /api/maintenance
 // @desc    Create new maintenance record
 // @access  Private (Admin/Manager)
-router.post('/', roleMiddleware(['admin', 'manager']), createMaintenance);
+router.post('/', roleMiddleware(['Admin', 'Manager']), createMaintenance);
 
 // @route   PUT /api/maintenance/:id
 // @desc    Update maintenance record
 // @access  Private (Admin/Manager)
-router.put('/:id', roleMiddleware(['admin', 'manager']), updateMaintenance);
+router.put('/:id', roleMiddleware(['Admin', 'Manager']), updateMaintenance);
 
 // @route   PATCH /api/maintenance/:id/status
 // @desc    Update maintenance status
 // @access  Private (Admin/Manager/Technician)
-router.patch('/:id/status', roleMiddleware(['admin', 'manager', 'technician']), updateMaintenanceStatus);
+router.patch('/:id/status', roleMiddleware(['Admin', 'Manager', 'Technician']), updateMaintenanceStatus);
 
 // @route   DELETE /api/maintenance/:id
 // @desc    Delete maintenance record
 // @access  Private (Admin only)
-router.delete('/:id', roleMiddleware(['admin']), deleteMaintenance);
+router.delete('/:id', roleMiddleware(['Admin']), deleteMaintenance);
 
 module.exports = router;

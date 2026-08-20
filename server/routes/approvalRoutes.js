@@ -21,7 +21,7 @@ router.get('/pending', getPendingApprovals);
 // @route   GET /api/approvals
 // @desc    Get all approval requests (admin only)
 // @access  Private (Admin/Manager)
-router.get('/', roleMiddleware(['admin', 'manager']), getAllApprovals);
+router.get('/', roleMiddleware(['Admin', 'Manager']), getAllApprovals);
 
 // @route   GET /api/approvals/:id
 // @desc    Get approval request details

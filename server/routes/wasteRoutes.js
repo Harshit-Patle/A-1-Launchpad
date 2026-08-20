@@ -117,6 +117,13 @@ router.get('/reports/summary', auth, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/waste/statistics/summary
+ * @desc    Get waste statistics summary for dashboard
+ * @access  Private
+ */
+router.get('/statistics/summary', auth, wasteController.getWasteStatisticsSummary);
+
+/**
  * @route   GET /api/waste/:id
  * @desc    Get a specific waste entry
  * @access  Private
@@ -165,44 +172,5 @@ router.delete('/:id', [auth, adminOnly], async (req, res) => {
         res.status(500).json({ msg: 'Server error' });
     }
 });
-router.get('/reports/summary', auth, async (req, res) => {
-    try {
-        // Get total waste entries count
-        const totalEntries = await WasteEntry.countDocuments();
-
-        // Get total quantity disposed
-        const quantityResult = await WasteEntry.aggregate([
-            { $group: { _id: null, total: { $sum: '$quantity' } } }
-        ]);
-        const totalQuantity = quantityResult.length > 0 ? quantityResult[0].total : 0;
-
-        // Get disposal methods breakdown
-        const methodBreakdown = await WasteEntry.aggregate([
-            { $group: { _id: '$disposalMethod', count: { $sum: 1 } } }
-        ]);
-
-        // Get reason breakdown
-        const reasonBreakdown = await WasteEntry.aggregate([
-            { $group: { _id: '$reason', count: { $sum: 1 } } }
-        ]);
-
-        res.json({
-            totalEntries,
-            totalQuantity,
-            methodBreakdown,
-            reasonBreakdown
-        });
-    } catch (err) {
-        console.error('Error generating waste summary report:', err);
-        res.status(500).json({ msg: 'Server error' });
-    }
-});
-
-/**
- * @route   GET /api/waste/statistics/summary
- * @desc    Get waste statistics summary for dashboard
- * @access  Private
- */
-router.get('/statistics/summary', auth, wasteController.getWasteStatisticsSummary);
 
 module.exports = router;
