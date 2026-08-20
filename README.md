@@ -155,30 +155,22 @@ cp .env.example .env
 cd ../client
 npm install
 cp .env.example .env
-# Edit .env with your API URL
+# Edit .env if custom API configuration is needed
 ```
 
-4. **Seed the database (optional)**
+4. **Start the development servers**
 
 ```bash
-cd ../server
-npm run seed
-# This will populate the database with sample data
-```
-
-5. **Start the development servers**
-
-```bash
-# Terminal 1 - Backend
+# Terminal 1 - Backend (starts on port 5000)
 cd server
 npm run dev
 
-# Terminal 2 - Frontend
+# Terminal 2 - Frontend (starts on port 5173)
 cd client
 npm run dev
 ```
 
-6. **Access the application**
+5. **Access the application**
 
 Open your browser and navigate to [http://localhost:5173](http://localhost:5173)
 
