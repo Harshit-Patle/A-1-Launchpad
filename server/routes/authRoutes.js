@@ -1,9 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const { adminOnly } = require('../middleware/roleMiddleware');
 const { validateUser, validateLogin, validatePasswordChange } = require('../middleware/validation');
+
+// Rate limiter for login to prevent brute force attacks
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 15, // limit each IP to 15 requests per windowMs
+    message: { msg: 'Too many login attempts from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
 
 // @route   POST /api/auth/register
 // @desc    Register a new user (Admin only)
@@ -13,7 +23,7 @@ router.post('/register', authMiddleware, adminOnly, validateUser, authController
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
-router.post('/login', validateLogin, authController.login);
+router.post('/login', loginLimiter, validateLogin, authController.login);
 
 // @route   GET /api/auth/me
 // @desc    Get current user
