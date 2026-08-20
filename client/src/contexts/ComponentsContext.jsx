@@ -114,7 +114,7 @@ const componentsReducer = (state, action) => {
                 ...state,
                 stats: action.payload,
             };
-        case 'SET_FILTERS':
+        case 'SET_FILTERS': {
             // Extract the page from action.payload if it exists
             const { page, ...otherFilters } = action.payload;
             return {
@@ -129,6 +129,7 @@ const componentsReducer = (state, action) => {
                     page: parseInt(page) || 1
                 } : state.pagination
             };
+        }
         case 'SET_PAGINATION':
             return {
                 ...state,

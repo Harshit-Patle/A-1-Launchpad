@@ -87,13 +87,13 @@ export default function WasteTracking() {
             console.error('Failed to fetch waste entries:', error);
             toast.error('Failed to load waste tracking data');
             // Use sample data as fallback
-            useSampleData();
+            loadSampleData();
         } finally {
             setLoading(false);
         }
     };
 
-    const useSampleData = () => {
+    const loadSampleData = () => {
         const sampleEntries = [
             {
                 id: 1,
