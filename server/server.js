@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 // Load environment variables from .env file (local development only)
 // On Vercel, variables are injected via environment configuration
 if (process.env.NODE_ENV !== 'production') {
-    dotenv.config();
+    dotenv.config({ override: true });
 }
 
 const app = express();
