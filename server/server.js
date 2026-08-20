@@ -81,36 +81,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// CORS diagnostic endpoint
-app.get('/api/cors-diagnostic', (req, res) => {
-    let allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://localhost:5002',
-        'https://lims-a-1-launchpad.vercel.app',
-        process.env.CLIENT_URL
-    ];
-
-    if (process.env.ADDITIONAL_CORS_ORIGINS) {
-        const additionalOrigins = process.env.ADDITIONAL_CORS_ORIGINS.split(',');
-        allowedOrigins = allowedOrigins.concat(additionalOrigins);
-    }
-
-    if (process.env.FRONTEND_URL) {
-        allowedOrigins.push(process.env.FRONTEND_URL);
-    }
-
-    res.json({
-        message: 'CORS diagnostic information',
-        requestOrigin: req.headers.origin || 'none',
-        allowedOrigins: allowedOrigins,
-        corsMode: isDevelopment ? 'development (permissive)' : 'production (strict)',
-        clientUrl: process.env.CLIENT_URL,
-        frontendUrl: process.env.FRONTEND_URL || 'none configured',
-        additionalOrigins: process.env.ADDITIONAL_CORS_ORIGINS || 'none configured'
-    });
-});
-
 // Connect to Database
 connectDB();
 
@@ -181,16 +151,6 @@ app.use((err, req, res, next) => {
         error: err.name,
         message: err.message,
         stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack
-    });
-});
-
-// Global error handler
-app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
-
-    res.status(500).json({
-        msg: 'Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
     });
 });
 
