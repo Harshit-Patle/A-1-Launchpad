@@ -84,6 +84,16 @@ app.use((req, res, next) => {
 // Connect to Database
 connectDB();
 
+// Middleware to ensure DB connection is ready for API endpoints
+app.use('/api', async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
 // Handle OPTIONS preflight requests
 app.options('*', cors(corsOptions));
 
