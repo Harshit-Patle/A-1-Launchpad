@@ -14,10 +14,15 @@ connectDB();
 
 const app = express();
 
-// 1. Normalize AWS API Gateway stage prefixes if present (e.g. /default or /prod)
+// 1. Normalize AWS API Gateway stage & function name prefixes if present
 app.use((req, res, next) => {
-    if (req.url.startsWith('/default')) {
+    // Strip default AWS Lambda trigger path prefix (e.g. /default/a-1-launchpad-backend or /default)
+    if (req.url.startsWith('/default/a-1-launchpad-backend')) {
+        req.url = req.url.replace(/^\/default\/a-1-launchpad-backend/, '') || '/';
+    } else if (req.url.startsWith('/default')) {
         req.url = req.url.replace(/^\/default/, '') || '/';
+    } else if (req.url.startsWith('/a-1-launchpad-backend')) {
+        req.url = req.url.replace(/^\/a-1-launchpad-backend/, '') || '/';
     }
     next();
 });
