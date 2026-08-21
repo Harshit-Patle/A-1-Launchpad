@@ -1,0 +1,46 @@
+name: Deploy Backend to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Server Production Dependencies
+        working-directory: ./server
+        run: |
+          npm ci --omit=dev
+
+      - name: Package Lambda Deployment Zip
+        working-directory: ./server
+        run: |
+          zip -r ../server.zip . -x "*.git*" "logs/*" "*.log" "seed.js"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-south-1' }}
+
+      - name: Deploy to AWS Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME || 'a-1-launchpad-backend' }} \
+            --zip-file fileb://server.zip
