@@ -15,7 +15,6 @@ const api = axios.create({
         // Adding explicit Accept header
         'Accept': 'application/json',
     },
-    withCredentials: true, // Important for CORS credentials
 });
 
 // Request interceptor to add auth token
