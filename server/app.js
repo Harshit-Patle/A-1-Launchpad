@@ -16,8 +16,12 @@ const app = express();
 
 // 1. Normalize AWS API Gateway stage & function name prefixes if present
 app.use((req, res, next) => {
-    // Strip default AWS Lambda trigger path prefix (e.g. /default/a-1-launchpad-backend or /default)
-    if (req.url.startsWith('/default/a-1-launchpad-backend')) {
+    // Strip dynamic trigger prefixes (e.g. /default/lims-backend, /default/a-1-launchpad-backend, /default, etc.)
+    if (req.url.startsWith('/default/lims-backend')) {
+        req.url = req.url.replace(/^\/default\/lims-backend/, '') || '/';
+    } else if (req.url.startsWith('/lims-backend')) {
+        req.url = req.url.replace(/^\/lims-backend/, '') || '/';
+    } else if (req.url.startsWith('/default/a-1-launchpad-backend')) {
         req.url = req.url.replace(/^\/default\/a-1-launchpad-backend/, '') || '/';
     } else if (req.url.startsWith('/default')) {
         req.url = req.url.replace(/^\/default/, '') || '/';
