@@ -14,19 +14,21 @@ connectDB();
 
 const app = express();
 
-// 1. Normalize AWS API Gateway stage & function name prefixes if present
+// 1. Normalize AWS API Gateway stage & function name prefixes across req.url and req.originalUrl
 app.use((req, res, next) => {
-    // Strip dynamic trigger prefixes (e.g. /default/lims-backend, /default/a-1-launchpad-backend, /default, etc.)
-    if (req.url.startsWith('/default/lims-backend')) {
-        req.url = req.url.replace(/^\/default\/lims-backend/, '') || '/';
-    } else if (req.url.startsWith('/lims-backend')) {
-        req.url = req.url.replace(/^\/lims-backend/, '') || '/';
-    } else if (req.url.startsWith('/default/a-1-launchpad-backend')) {
-        req.url = req.url.replace(/^\/default\/a-1-launchpad-backend/, '') || '/';
-    } else if (req.url.startsWith('/default')) {
-        req.url = req.url.replace(/^\/default/, '') || '/';
-    } else if (req.url.startsWith('/a-1-launchpad-backend')) {
-        req.url = req.url.replace(/^\/a-1-launchpad-backend/, '') || '/';
+    const stripPrefix = (url) => {
+        if (!url) return '/';
+        return url
+            .replace(/^\/default\/lims-backend/, '')
+            .replace(/^\/default\/a-1-launchpad-backend/, '')
+            .replace(/^\/default/, '')
+            .replace(/^\/lims-backend/, '')
+            .replace(/^\/a-1-launchpad-backend/, '') || '/';
+    };
+
+    req.url = stripPrefix(req.url);
+    if (req.originalUrl) {
+        req.originalUrl = stripPrefix(req.originalUrl);
     }
     next();
 });
